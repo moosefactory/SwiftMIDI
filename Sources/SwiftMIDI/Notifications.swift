@@ -46,11 +46,17 @@ public extension SwiftMIDINotification {
 /// We keep the CoreMidi values in the structure, to stay tight with the CoreMidi FrameWork.
 ///
 /// Use type.swifty to access the Swifty value, with string description and syntax style
+
 public struct MidiNotificationObject {
     public let ref: MIDIObjectRef
     public let type: MIDIObjectType
     public let parentRef: MIDIObjectRef
     public let parentType: MIDIObjectType
+    
+    var isDevice: Bool { return type == .device || type == .externalDevice }
+    var isEntity: Bool { return type == .entity || type == .externalEntity }
+    var isSource: Bool { return type == .source || type == .externalSource }
+    var isDestination: Bool { return type == .destination || type == .externalDestination }
 }
 
 public extension SwiftMIDI {

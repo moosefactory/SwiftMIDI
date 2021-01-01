@@ -31,6 +31,7 @@ public extension SwiftMIDI {
     /// - parameter clientRef : The midi client ref
     /// - parameter portName : The port name, usually in reverse path style
     /// - returns : The created output port
+    
     static func createOutputPort(clientRef: MIDIClientRef, portName: String) throws -> MIDIPortRef {
         var portRef: MIDIPortRef = 0
         try coreMidi {

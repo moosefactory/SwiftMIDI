@@ -39,9 +39,37 @@ public extension SwiftMIDI {
         return out
     }
     
+    /// connectSource
+    /// Establishes a connection from a source to a client's input port.
+    
+    /// - parameter port
+    /// The port to which to create the connection.  This port's
+    /// readProc is called with incoming MIDI from the source.
+    /// - parameter source
+    /// The source from which to create the connection.
+    /// - parameter connRefCon
+    /// This refCon is passed to the port's MIDIReadProc or MIDIReadBlock, as a way to
+    /// identify the source.
+    
+    @available(macOS 10.0, *)
     static func connect(source: MIDIEndpointRef, to port: MIDIPortRef, refCon: UnsafeMutableRawPointer? = nil) throws {
         try coreMidi {
             MIDIPortConnectSource(port, source, refCon)
+        }
+    }
+    
+    /// disconnectSource
+    /// Closes a previously-established source-to-input port  connection.
+    ///
+    /// - parameter port
+    /// The port whose connection is being closed.
+    /// - parameter source
+    /// The source from which to close a connection to the
+    /// specified port.
+    @available(macOS 10.0, *)
+    static func disconnect(source: MIDIEndpointRef, from port: MIDIPortRef) throws {
+        try coreMidi {
+            MIDIPortDisconnectSource(port, source)
         }
     }
 }

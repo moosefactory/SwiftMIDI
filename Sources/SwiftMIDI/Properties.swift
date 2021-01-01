@@ -61,7 +61,7 @@ public extension SwiftMIDI {
         try coreMidi {
             MIDIObjectGetStringProperty(object, propertyID as CFString, &string)
         }
-        return string?.takeUnretainedValue() as String?
+        return string?.takeRetainedValue() as String?
     }
     
     /// SetStringProperty
@@ -98,7 +98,7 @@ public extension SwiftMIDI {
         try coreMidi {
             MIDIObjectGetDataProperty(object, propertyID as CFString, &data)
         }
-        return data?.takeUnretainedValue() as Data?
+        return data?.takeRetainedValue() as Data?
     }
     
     /// SetDataProperty
@@ -134,7 +134,7 @@ public extension SwiftMIDI {
         try coreMidi {
             MIDIObjectGetDictionaryProperty(object, propertyID as CFString, &dict)
         }
-        return dict?.takeUnretainedValue() as? [String: AnyObject]
+        return dict?.takeRetainedValue() as? [String: AnyObject]
     }
     
     /// SetDictionaryProperty
