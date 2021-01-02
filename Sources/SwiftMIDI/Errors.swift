@@ -18,6 +18,7 @@ public extension SwiftMIDI {
 
         /// To use when checking MIDIObjectRef before use it in core midi
         case sourceRefNotSet
+        case inputPortRefNotSet
 
         public var description: String {
             let prefix = "CoreMidi Error - "
@@ -29,6 +30,8 @@ public extension SwiftMIDI {
                 return "\(prefix)Destination Index Out Of Range"
             case .sourceRefNotSet:
                 return "\(prefix)Source Ref not set"
+            case .inputPortRefNotSet:
+                return "\(prefix)Input Port Ref not set"
             }
         }
     }
