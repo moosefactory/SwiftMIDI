@@ -1,6 +1,14 @@
+--------------------------------------------------------------------------
+   /\/\/\__/\/\/\        MooseFactory SwiftMidi - v1 .0
+   \/\/\/..\/\/\/
+        |  |             (c)2021 Tristan Leblanc
+        (oo)             tristan@moosefactory.eu
+ MooseFactory Software
+--------------------------------------------------------------------------
+
 MIT License
 
-Copyright (c) 2020 Tristan Leblanc
+Copyright (c) 2020 Tristan Leblanc - MooseFactory Software
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
