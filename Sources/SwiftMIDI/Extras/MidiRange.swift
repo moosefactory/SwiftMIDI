@@ -25,54 +25,40 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// NotificationMessage.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 30/12/2020.
+//  MidiRange.swift
+//  Created by Tristan Leblanc on 08/01/2021.
 
 import Foundation
 import CoreMIDI
 
-/// NotificationMessage
-///
-///
-public enum NotificationMessage: Int, CustomStringConvertible {
+public struct NoteRange: Codable, Equatable, CustomStringConvertible {
+    public var lowerNote: UInt8 = 0
+    public var higherNote: UInt8 = 127
     
-    case unknown
-    case setupChanged
-    case objectAdded
-    case objectRemoved
-    case propertyChanged
-    case thruConnectionChanged
-    case serialPortOwnerChanged
-    case ioError
-
-    /// Init from CoreMIDI MessageID
-    init(_ coreMidiMessage: MIDINotificationMessageID) {
-        self = NotificationMessage(rawValue: Int(coreMidiMessage.rawValue)) ?? .unknown
+    public init(lowerNote: UInt8 = 0, higherNote: UInt8 = 127) {
+        self.lowerNote = min(127, lowerNote)
+        self.higherNote = min(max(self.lowerNote, higherNote), 127)
     }
-
-    /// Readable description
+    
+    public static let full = NoteRange()
+    
     public var description: String {
-        switch self {
-        case .unknown:
-            return "Unknown"
-        case .setupChanged:
-            return "Setup Changed"
-        case .objectAdded:
-            return "Object Added"
-        case .objectRemoved:
-            return "Object Removed"
-        case .propertyChanged:
-            return "Property Changed"
-        case .thruConnectionChanged:
-            return "Thru Connection Changed"
-        case .serialPortOwnerChanged:
-            return "Port Owner Changed"
-        case .ioError:
-            return "IO Error"
-        }
+        return "Note Range : [\(lowerNote)..\(higherNote)]"
     }
 }
 
+public struct VelocityRange: Codable, Equatable, CustomStringConvertible {
+    public var lowerVelocity: UInt8 = 0
+    public var higherVelocity: UInt8 = 127
+    
+    public init(lowerVelocity: UInt8 = 0, higherVelocity: UInt8 = 127) {
+        self.lowerVelocity = min(127, lowerVelocity)
+        self.higherVelocity = min(max(self.lowerVelocity, higherVelocity), 127)
+    }
+    
+    public static let full = VelocityRange()
+    
+    public var description: String {
+        return "Velo Range : [\(lowerVelocity)..\(higherVelocity)]"
+    }
+}

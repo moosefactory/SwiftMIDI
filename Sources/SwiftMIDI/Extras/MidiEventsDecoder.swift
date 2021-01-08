@@ -25,54 +25,34 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// NotificationMessage.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 30/12/2020.
+//  MidiEventsDecoder.swift
+//  Created by Tristan Leblanc on 08/01/2021.
 
 import Foundation
 import CoreMIDI
 
-/// NotificationMessage
-///
-///
-public enum NotificationMessage: Int, CustomStringConvertible {
+class MidiEventsDecoder {
     
-    case unknown
-    case setupChanged
-    case objectAdded
-    case objectRemoved
-    case propertyChanged
-    case thruConnectionChanged
-    case serialPortOwnerChanged
-    case ioError
-
-    /// Init from CoreMIDI MessageID
-    init(_ coreMidiMessage: MIDINotificationMessageID) {
-        self = NotificationMessage(rawValue: Int(coreMidiMessage.rawValue)) ?? .unknown
-    }
-
-    /// Readable description
-    public var description: String {
-        switch self {
-        case .unknown:
-            return "Unknown"
-        case .setupChanged:
-            return "Setup Changed"
-        case .objectAdded:
-            return "Object Added"
-        case .objectRemoved:
-            return "Object Removed"
-        case .propertyChanged:
-            return "Property Changed"
-        case .thruConnectionChanged:
-            return "Thru Connection Changed"
-        case .serialPortOwnerChanged:
-            return "Port Owner Changed"
-        case .ioError:
-            return "IO Error"
+    public static func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
+                                    channelMask: MidiChannelMask = .all,
+                                    channelMap: MidiChannelMapper? = nil,
+                                    completion: ([MidiEvent])->Void) {
+        var out = [MidiEvent]()
+        let numPackets = packetList.pointee.numPackets
+        var p = packetList.pointee.packet
+        
+        for _ in 0 ..< numPackets {
+            if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0,
+               let type = MidiEventType(rawValue: (p.data.0 & 0xF0)) {
+                let event = MidiEvent(type: type,
+                                      timestamp: p.timeStamp,
+                                      channel: (p.data.0 & 0x0F),
+                                      value1: p.data.1,
+                                      value2: p.data.2)
+                out.append(event)
+            }
+            p = MIDIPacketNext(&p).pointee
         }
+        completion(out)
     }
 }
-

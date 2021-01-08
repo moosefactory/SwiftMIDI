@@ -25,54 +25,30 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// NotificationMessage.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 30/12/2020.
+//  ClockSignal.swift
+//  Created by Tristan Leblanc on 06/01/2021.
 
 import Foundation
 import CoreMIDI
 
-/// NotificationMessage
+/// ClockSignal
 ///
-///
-public enum NotificationMessage: Int, CustomStringConvertible {
+/// Use to extract clock ticks from a MidiPacketList
+public struct ClockSignal {
+    public var ticks: Int = 0
+    public var quarterNotes: Int { ticks / 24 }
+    public var timeStamp: MIDITimeStamp?
+    public var channelMask: MidiChannelMask
     
-    case unknown
-    case setupChanged
-    case objectAdded
-    case objectRemoved
-    case propertyChanged
-    case thruConnectionChanged
-    case serialPortOwnerChanged
-    case ioError
-
-    /// Init from CoreMIDI MessageID
-    init(_ coreMidiMessage: MIDINotificationMessageID) {
-        self = NotificationMessage(rawValue: Int(coreMidiMessage.rawValue)) ?? .unknown
-    }
-
-    /// Readable description
-    public var description: String {
-        switch self {
-        case .unknown:
-            return "Unknown"
-        case .setupChanged:
-            return "Setup Changed"
-        case .objectAdded:
-            return "Object Added"
-        case .objectRemoved:
-            return "Object Removed"
-        case .propertyChanged:
-            return "Property Changed"
-        case .thruConnectionChanged:
-            return "Thru Connection Changed"
-        case .serialPortOwnerChanged:
-            return "Port Owner Changed"
-        case .ioError:
-            return "IO Error"
-        }
-    }
+    public var didReceive: Bool { return ticks > 0 }
 }
 
+extension ClockSignal: CustomStringConvertible {
+    
+    public var description: String {
+        guard let ts = timeStamp else {
+            return "No Clock Signal Received"
+        }
+        return "Clock Signal - Received \(ticks) - last time: \(ts) - channels: \(channelMask) - QuarterNotes: \(quarterNotes)"
+    }
+}
