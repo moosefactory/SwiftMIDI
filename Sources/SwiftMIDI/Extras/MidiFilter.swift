@@ -46,9 +46,6 @@ public class MidiPacketsFilter: Codable, Equatable, CustomStringConvertible {
         self.eventTypes = eventTypes
         self.noteRange = noteRange
         self.velocityRange = velocityRange
-        
-        print("Filter init:")
-        print(self)
     }
     
     public var description: String {
@@ -292,7 +289,6 @@ public extension MidiPacketsFilter {
         // Get final number of events
         let (count, dataSize) = outputCountAndSize(in: packetList)
         guard count > 0 else { return nil }
-        print("Filter - Will keep \(count) events (\(dataSize) bytes)")
         
         var outPackets = MIDIPacketList()
         let writePacketPtr = MIDIPacketListInit(&outPackets)
@@ -386,7 +382,7 @@ public extension MidiPacketsFilter {
                         if !wroteStatus {
                             wroteStatus = true
                             targetBytes[writeIndex] = currentStatus
-                            print("write status byte: \(currentStatus) at \(writeIndex)")
+
                             // filter events
                             if !eventTypes.contains(rawEventType: type) {
                                 skipTrain = true
@@ -424,11 +420,8 @@ public extension MidiPacketsFilter {
                                         // --- WRITE ----
                                         writeIndex += 1
                                         targetBytes[writeIndex] = data1
-                                        print("write note byte: \(data1) at \(writeIndex)")
-
                                         writeIndex += 1
                                         targetBytes[writeIndex] = byte
-                                        print("write velo byte: \(byte) at \(writeIndex)")
                                         // -------------
                                         
                                     } else {
