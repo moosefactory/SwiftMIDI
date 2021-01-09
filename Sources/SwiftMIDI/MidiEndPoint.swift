@@ -38,13 +38,18 @@ import CoreMIDI
 
 public extension SwiftMIDI {
     
-    /// Returns the number of midi sources
-    static var numberOfDestinations: Int {
-        return MIDIGetNumberOfDestinations()
+    /// Returns the number of midi destinations
+    static func getNumberOfDestinations() throws -> Int {
+        let count = MIDIGetNumberOfDestinations()
+        if count == 0 {
+            throw SwiftMIDI.Errors.noDestinationInSystem
+        }
+        return count
     }
     
     /// Returns the destination at given index
     static func destination(at index: Int) throws -> MIDIEndpointRef {
+        let numberOfDestinations = try getNumberOfDestinations()
         guard index >= 0 && index < numberOfDestinations else {
             throw SwiftMIDI.Errors.destinationIndexOutOfRange
         }
@@ -74,12 +79,17 @@ public extension SwiftMIDI {
 public extension SwiftMIDI {
     
     /// Returns the number of midi sources
-    static var numberOfSources: Int {
-        return MIDIGetNumberOfSources()
+    static func getNumberOfSources() throws -> Int {
+        let count = MIDIGetNumberOfSources()
+        if count == 0 {
+            throw SwiftMIDI.Errors.noSourceInSystem
+        }
+        return count
     }
-    
+
     /// Returns the source at given index
     static func source(at index: Int) throws -> MIDIEndpointRef {
+        let numberOfSources = try getNumberOfSources()
         guard index >= 0 && index < numberOfSources else {
             throw SwiftMIDI.Errors.sourceIndexOutOfRange
         }

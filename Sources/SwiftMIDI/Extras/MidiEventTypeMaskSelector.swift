@@ -95,7 +95,7 @@ public enum MidiEventTypeMaskSelector: Int, Codable, CaseIterable {
         case .programChange:
             return .programChange
         case .clock:
-            return .clock
+            return .realTimeMessage
         }
     }
     

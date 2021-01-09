@@ -97,7 +97,7 @@ extension MidiEvent: CustomStringConvertible {
             let fractionalPitchString = "   \(fractionalPitch)%".suffix(4)
 
             return " Pitch   \(fractionalPitchString)   Value: \(pitchStr) (\(val1),\(val2)) CH:\(chanStr)  "
-        case .clock:
+        case .realTimeMessage:
             return " Clock 1/24 Note "
         }
     }

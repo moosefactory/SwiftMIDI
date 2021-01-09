@@ -31,34 +31,23 @@
 import Foundation
 import CoreMIDI
 
-public struct NoteRange: Codable, Equatable, CustomStringConvertible {
-    public var lowerNote: UInt8 = 0
-    public var higherNote: UInt8 = 127
+public struct MidiRange: Codable, Equatable, CustomStringConvertible {
+    public var lower: UInt8 = 0
+    public var higher: UInt8 = 127
     
-    public init(lowerNote: UInt8 = 0, higherNote: UInt8 = 127) {
-        self.lowerNote = min(127, lowerNote)
-        self.higherNote = min(max(self.lowerNote, higherNote), 127)
+    public init(lower: UInt8 = 0, higher: UInt8 = 127) {
+        self.lower = min(127, lower)
+        self.higher = min(127, higher)
     }
     
-    public static let full = NoteRange()
+    public static let full = MidiRange()
+    
+    /// We consider [127..0] as an unset range
+    public var isSet: Bool {
+        return lower != 127 && higher != 0
+    }
     
     public var description: String {
-        return "Note Range : [\(lowerNote)..\(higherNote)]"
-    }
-}
-
-public struct VelocityRange: Codable, Equatable, CustomStringConvertible {
-    public var lowerVelocity: UInt8 = 0
-    public var higherVelocity: UInt8 = 127
-    
-    public init(lowerVelocity: UInt8 = 0, higherVelocity: UInt8 = 127) {
-        self.lowerVelocity = min(127, lowerVelocity)
-        self.higherVelocity = min(max(self.lowerVelocity, higherVelocity), 127)
-    }
-    
-    public static let full = VelocityRange()
-    
-    public var description: String {
-        return "Velo Range : [\(lowerVelocity)..\(higherVelocity)]"
+        return "[\(lower)..\(higher)]"
     }
 }

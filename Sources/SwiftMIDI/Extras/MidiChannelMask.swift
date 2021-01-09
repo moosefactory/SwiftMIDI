@@ -41,3 +41,4 @@ extension MidiChannelMask {
     public static let none: MidiChannelMask = 0x0000
     public static let channel1: MidiChannelMask = 0x0001
 }
+

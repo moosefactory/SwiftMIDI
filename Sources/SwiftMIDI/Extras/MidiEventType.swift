@@ -43,7 +43,7 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
     case programChange = 0xC0
     case afterTouch = 0xD0
     case pitchBend = 0xE0
-    case clock = 0xF0
+    case realTimeMessage = 0xF0
 
     /// dataLength
     ///
@@ -55,7 +55,7 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
             return 2
         case .afterTouch, .programChange:
             return 1
-        case .clock:
+        case .realTimeMessage:
             return 0
         }
     }
@@ -80,8 +80,8 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
             return "Aftertouch"
         case .pitchBend:
             return "Pitch Bend Change"
-        case .clock:
-            return "Clock"
+        case .realTimeMessage:
+            return "Real Time Message"
         }
     }
     
@@ -105,8 +105,8 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
             return .noteAfterTouch
         case .pitchBend:
             return .pitchBend
-        case .clock:
-            return .clock
+        case .realTimeMessage:
+            return .realTimeMessage
         }
     }
 }
@@ -132,7 +132,8 @@ public struct MidiEventTypeMask: Codable, OptionSet, CustomStringConvertible {
     static public let control = MidiEventTypeMask(rawValue: 0x10)
     static public let pitchBend = MidiEventTypeMask(rawValue: 0x20)
     static public let programChange = MidiEventTypeMask(rawValue: 0x40)
-    static public let clock = MidiEventTypeMask(rawValue: 0x80)
+    
+    static public let realTimeMessage = MidiEventTypeMask(rawValue: 0x80)
     
     static public let all = MidiEventTypeMask(rawValue: 0xFF)
     static public let allExceptedClock = MidiEventTypeMask(rawValue: 0x7F)
@@ -157,8 +158,8 @@ public struct MidiEventTypeMask: Codable, OptionSet, CustomStringConvertible {
             return contains(.noteAfterTouch)
         case MidiEventType.pitchBend.rawValue:
             return contains(.pitchBend)
-        case MidiEventType.clock.rawValue:
-            return contains(.clock)
+        case MidiEventType.realTimeMessage.rawValue:
+            return contains(.realTimeMessage)
         default:
             return true
         }
@@ -184,12 +185,41 @@ public struct MidiEventTypeMask: Codable, OptionSet, CustomStringConvertible {
         if contains(.programChange) {
             out += ["PgChange"]
         }
-        if contains(.clock) {
-            out += ["Clock"]
+        if contains(.realTimeMessage) {
+            out += ["Real Time Message"]
         }
         if contains(.pitchBend) {
             out += ["PitchBend"]
         }
         return "[" + out.joined(separator: ", ") + "]"
+    }
+}
+
+public enum RealTimeMessageType: UInt8, Codable, CustomStringConvertible {
+    case none = 0x00
+    case clock = 0xF8
+    case start = 0xFA
+    case `continue` = 0xFB
+    case stop = 0xFC
+    case activeSensing = 0xFE
+    case systemReset = 0xFF
+    
+    public var description: String {
+        switch self {
+        case .none:
+            return "None"
+        case .clock:
+            return "Clock"
+        case .start:
+            return "Start"
+        case .continue:
+            return "Continue"
+        case .stop:
+            return "Stop"
+        case .activeSensing:
+            return "Active Sensing"
+        case .systemReset:
+            return "System Reset"
+        }
     }
 }

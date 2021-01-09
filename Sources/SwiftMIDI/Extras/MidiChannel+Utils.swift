@@ -30,6 +30,32 @@
 
 import Foundation
 
+/// Channel Map structure
+///
+/// Channel map is used in filters to redirect from one channel to another.
+/// It can be used as a merger if several channels are redirected to the same channel.
+///
+/// For multiplexing, use the MidiChannelMatrix
+
+public struct MidiChannelsMap: Codable, Equatable {
+    public var channels: [UInt8] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    
+    public static let identity = MidiChannelsMap()
+    
+    public init() {}
+}
+
+/// MidiChannelsTranspose
+///
+/// A 16 transpose values (in semitones) that can be used to change note values coming from channels
+public struct MidiChannelsTranspose: Codable, Equatable {
+    public var transpose: [Int16] = [Int16].init(repeating: Int16(0), count: 16)
+    
+    public static let identity = MidiChannelsTranspose()
+
+    public init() {}
+}
+
 /// A channel multiplexer matrix.
 ///
 /// This can be used to propagate events from on channel to multiple channels
@@ -57,15 +83,6 @@ public struct MidiChannelMatrix {
     public init() {}
 }
 
-/// MidiChannelsTranspose
-///
-/// A 16 transpose values that can be used to change note values coming from channels
-public struct MidiChannelsTranspose {
-    public var transpose = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0]
-    
-    public init() {}
-}
-
 public struct MidiChannelsTransposeMatrix {
     public var transpose = [
         MidiChannelsTranspose(),
@@ -89,22 +106,4 @@ public struct MidiChannelsTransposeMatrix {
     public init() {}
 }
 
-/// MidiCHannelMapper
-///
-/// A simple mapper that maps all channels set in input mask to all channels set in output mask
-public struct MidiChannelMapper {
-    public var inChannels: MidiChannelMask
-    public var outChannels: MidiChannelMask
-    
-    public init(inChannels: MidiChannelMask, outChannels: MidiChannelMask? = nil) {
-        self.inChannels = inChannels
-        self.outChannels = outChannels ?? inChannels
-    }
-    
-    public init(inChannel: UInt8, outChannel: UInt8? = nil) {
-        self.inChannels = MidiChannelMask(channel: inChannel)
-        self.outChannels = outChannel == nil
-            ? inChannels
-            : MidiChannelMask(channel: outChannel!)
-    }
-}
+

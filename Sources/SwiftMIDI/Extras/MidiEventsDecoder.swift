@@ -35,7 +35,6 @@ class MidiEventsDecoder {
     
     public static func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
                                     channelMask: MidiChannelMask = .all,
-                                    channelMap: MidiChannelMapper? = nil,
                                     completion: ([MidiEvent])->Void) {
         var out = [MidiEvent]()
         let numPackets = packetList.pointee.numPackets
