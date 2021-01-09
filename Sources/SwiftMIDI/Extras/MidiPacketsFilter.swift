@@ -123,14 +123,13 @@ public class MidiPacketsFilter {
                         trainDataSize = 0
                         byteSelector = false
                         checkedStatus = false
-                        
-                        // Process data-less, channel-less types
                         if type == MidiEventType.realTimeMessage.rawValue {
                             if !settings.eventTypes.contains(rawEventType: type) {
                                 continue
                             }
                             
                             trainLength += 1
+                            dataSize += 1
                         }
                         
                         continue
@@ -303,6 +302,7 @@ public class MidiPacketsFilter {
             var writeIndex = 0
             
             var p = packetList.pointee.packet
+            var length = Int(p.length)
             for _ in 0 ..< packetList.pointee.numPackets {
                 
                 // Scan the midi data and cut if necessary
@@ -327,7 +327,7 @@ public class MidiPacketsFilter {
                 var wroteStatus: Bool = false
                 
                 withUnsafeBytes(of: &p.data) { bytes in
-                    for i in 0..<Int(p.length) {
+                    for i in 0..<length {
                         byte = UInt8(bytes[i])
                         
                         // Read Status Byte if needed
@@ -625,7 +625,7 @@ public class MidiPacketsFilter {
         MIDIPacketListAdd(&outPackets, Int(14 + dataSize), writePacketPtr, 0, Int(dataSize), targetBytes)
         
         output.filteringTime = -chrono.timeIntervalSinceNow
-        
+        output.packets = outPackets
         return output
     }
 }
