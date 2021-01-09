@@ -1,5 +1,5 @@
 //
-//  MidiProperties.swift
+//  MidiObjectProperties.swift
 //  Pulsar Lab
 //
 //  Created by Tristan Leblanc on 27/12/2019.

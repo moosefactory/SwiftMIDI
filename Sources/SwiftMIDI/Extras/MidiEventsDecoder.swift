@@ -25,58 +25,33 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// SwiftMidi.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 29/12/2020.
+//  MidiEventsDecoder.swift
+//  Created by Tristan Leblanc on 08/01/2021.
 
 import Foundation
 import CoreMIDI
 
-@available(macOS 10.15, *)
-public extension Notification.Name {
-    static let MIDINetworkContactsDidChange = Notification.Name(MIDINetworkNotificationContactsDidChange)
-}
-
-/// SwiftMIDI
-///
-/// A swifty layer over the CoreMIDI framework
-
-public struct SwiftMIDI {
-        
-    /// restart
-    /// Stops and restarts MIDI I/O.
-    ///
-    /// This is useful for forcing CoreMIDI to ask its drivers to rescan for hardware.
+class MidiEventsDecoder {
     
-    @available(macOS 10.1, *)
-    public static func restart() throws {
-        try coreMidi {
-            MIDIRestart()
+    public static func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
+                                    channelMask: MidiChannelMask = .all,
+                                    completion: ([MidiEvent])->Void) {
+        var out = [MidiEvent]()
+        let numPackets = packetList.pointee.numPackets
+        var p = packetList.pointee.packet
+        
+        for _ in 0 ..< numPackets {
+            if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0,
+               let type = MidiEventType(rawValue: (p.data.0 & 0xF0)) {
+                let event = MidiEvent(type: type,
+                                      timestamp: p.timeStamp,
+                                      channel: (p.data.0 & 0x0F),
+                                      value1: p.data.1,
+                                      value2: p.data.2)
+                out.append(event)
+            }
+            p = MIDIPacketNext(&p).pointee
         }
+        completion(out)
     }
-}
-
-// MARK: - Global Functions -
-
-/// Throw an exceptions if the status is not `noErr`
-
-public func throwMidiErrorIfNeeded(_ err: OSStatus) throws {
-    if err != noErr, let err = SwiftMIDI.MidiError(err) {
-        throw err
-    }
-}
-
-/// Transforms an osStatus result in a swift exception
-///
-/// Usage:
-/// ```
-/// try coreMidi {
-///    <Function that returns an osStatus >
-/// }
-
-public func coreMidi(_ block: ()->OSStatus) throws {
-    let err = block()
-    try throwMidiErrorIfNeeded(err)
 }

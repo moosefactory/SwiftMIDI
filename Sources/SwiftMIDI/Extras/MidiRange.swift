@@ -25,58 +25,29 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// SwiftMidi.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 29/12/2020.
+//  MidiRange.swift
+//  Created by Tristan Leblanc on 08/01/2021.
 
 import Foundation
 import CoreMIDI
 
-@available(macOS 10.15, *)
-public extension Notification.Name {
-    static let MIDINetworkContactsDidChange = Notification.Name(MIDINetworkNotificationContactsDidChange)
-}
-
-/// SwiftMIDI
-///
-/// A swifty layer over the CoreMIDI framework
-
-public struct SwiftMIDI {
-        
-    /// restart
-    /// Stops and restarts MIDI I/O.
-    ///
-    /// This is useful for forcing CoreMIDI to ask its drivers to rescan for hardware.
+public struct MidiRange: Codable, Equatable, CustomStringConvertible {
+    public var lower: UInt8 = 0
+    public var higher: UInt8 = 127
     
-    @available(macOS 10.1, *)
-    public static func restart() throws {
-        try coreMidi {
-            MIDIRestart()
-        }
+    public init(lower: UInt8 = 0, higher: UInt8 = 127) {
+        self.lower = min(127, lower)
+        self.higher = min(127, higher)
     }
-}
-
-// MARK: - Global Functions -
-
-/// Throw an exceptions if the status is not `noErr`
-
-public func throwMidiErrorIfNeeded(_ err: OSStatus) throws {
-    if err != noErr, let err = SwiftMIDI.MidiError(err) {
-        throw err
+    
+    public static let full = MidiRange()
+    
+    /// We consider [127..0] as an unset range
+    public var isSet: Bool {
+        return lower != 127 && higher != 0
     }
-}
-
-/// Transforms an osStatus result in a swift exception
-///
-/// Usage:
-/// ```
-/// try coreMidi {
-///    <Function that returns an osStatus >
-/// }
-
-public func coreMidi(_ block: ()->OSStatus) throws {
-    let err = block()
-    try throwMidiErrorIfNeeded(err)
+    
+    public var description: String {
+        return "[\(lower)..\(higher)]"
+    }
 }

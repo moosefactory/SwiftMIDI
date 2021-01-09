@@ -25,58 +25,30 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-// SwiftMidi.swift
-//
-// CoreMIDI Swift Wrapper
-//
-// Created by Tristan Leblanc on 29/12/2020.
+//  ClockSignal.swift
+//  Created by Tristan Leblanc on 06/01/2021.
 
 import Foundation
 import CoreMIDI
 
-@available(macOS 10.15, *)
-public extension Notification.Name {
-    static let MIDINetworkContactsDidChange = Notification.Name(MIDINetworkNotificationContactsDidChange)
-}
-
-/// SwiftMIDI
+/// ClockSignal
 ///
-/// A swifty layer over the CoreMIDI framework
-
-public struct SwiftMIDI {
-        
-    /// restart
-    /// Stops and restarts MIDI I/O.
-    ///
-    /// This is useful for forcing CoreMIDI to ask its drivers to rescan for hardware.
+/// Use to extract clock ticks from a MidiPacketList
+public struct ClockSignal {
+    public var ticks: Int = 0
+    public var quarterNotes: Int { ticks / 24 }
+    public var timeStamp: MIDITimeStamp?
+    public var channelMask: MidiChannelMask
     
-    @available(macOS 10.1, *)
-    public static func restart() throws {
-        try coreMidi {
-            MIDIRestart()
+    public var didReceive: Bool { return ticks > 0 }
+}
+
+extension ClockSignal: CustomStringConvertible {
+    
+    public var description: String {
+        guard let ts = timeStamp else {
+            return "No Clock Signal Received"
         }
+        return "Clock Signal - Received \(ticks) - last time: \(ts) - channels: \(channelMask) - QuarterNotes: \(quarterNotes)"
     }
-}
-
-// MARK: - Global Functions -
-
-/// Throw an exceptions if the status is not `noErr`
-
-public func throwMidiErrorIfNeeded(_ err: OSStatus) throws {
-    if err != noErr, let err = SwiftMIDI.MidiError(err) {
-        throw err
-    }
-}
-
-/// Transforms an osStatus result in a swift exception
-///
-/// Usage:
-/// ```
-/// try coreMidi {
-///    <Function that returns an osStatus >
-/// }
-
-public func coreMidi(_ block: ()->OSStatus) throws {
-    let err = block()
-    try throwMidiErrorIfNeeded(err)
 }
