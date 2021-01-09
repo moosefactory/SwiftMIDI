@@ -18,6 +18,20 @@ instead of
 func MIDIThruConnectionFind(_ inPersistentOwnerID: CFString, _ outConnectionList: UnsafeMutablePointer<Unmanaged<CFData>>) -> OSStatus
 ```
 
+**SwiftMIDI** is a simple framework that does only wrap principal CoreMIDI functions, and add few logic and definitions for common midi operations.
+
+[https://github.com/moosefactory/SwiftMIDI]()
+
+The **SwiftMIDICenter** framework adding some more system oriented features like storage and configurations management.
+
+[https://github.com/moosefactory/SwiftMIDICenter]()
+
+You can see both working in a sample project developed in SwiftUI : **SwiftMidiCenter App**
+
+[https://github.com/moosefactory/MIDICenterApp]()
+
+![Scheme](SwiftMIDI ReadMe Scheme.jpg)
+
 ## <font color='#1E72AD'>Installation</font>
 
 **SwiftMIDI** is distributed as a Swift Package
