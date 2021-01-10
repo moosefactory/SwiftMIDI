@@ -42,8 +42,16 @@ public extension SwiftMIDI {
         /// SwiftMIDIErrors
         case noSourceInSystem
         case sourceIndexOutOfRange
+        
         case noDestinationInSystem
         case destinationIndexOutOfRange
+        
+        case noEntityInSystem
+        case entityIndexOutOfRange
+        
+        case noDeviceInSystem
+        case deviceIndexOutOfRange
+        
 
         /// To use when checking MIDIObjectRef before use it in core midi
         case sourceRefNotSet
@@ -55,20 +63,33 @@ public extension SwiftMIDI {
             let prefix = "CoreMidi Error - "
 
             switch self {
+            case .noSourceInSystem:
+                return "\(prefix)No Midi Source in System"
             case .sourceIndexOutOfRange:
                 return "\(prefix)Source Index Out Of Range"
+
+            case .noDestinationInSystem:
+                return "\(prefix)No Midi Destination in System"
             case .destinationIndexOutOfRange:
                 return "\(prefix)Destination Index Out Of Range"
+
+            case .noEntityInSystem:
+                return "\(prefix)No Midi Entity in System"
+            case .entityIndexOutOfRange:
+                return "\(prefix)Entity Index Out Of Range"
+
+            case .noDeviceInSystem:
+                return "\(prefix)No Midi Device in System"
+            case .deviceIndexOutOfRange:
+                return "\(prefix)Device Index Out Of Range"
+
+
             case .sourceRefNotSet:
                 return "\(prefix)Source Ref not set"
             case .inputPortRefNotSet:
                 return "\(prefix)Input Port Ref not set"
             case .cantAllocatePacketList:
                 return "\(prefix)Can't allocate packet list"
-            case .noSourceInSystem:
-                return "\(prefix)No Midi Source in System"
-            case .noDestinationInSystem:
-                return "\(prefix)No Midi Destination in System"
             }
         }
     }
