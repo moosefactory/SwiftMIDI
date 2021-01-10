@@ -34,6 +34,20 @@
 import Foundation
 import CoreMIDI
 
+// MARK: - Access Endpoint Entity
+
+public extension SwiftMIDI {
+
+    /// Returns the entity for given endpoint
+    static func getEntity(for endpoint: MIDIEndpointRef) throws -> MIDIEntityRef {
+        var ref: MIDIEntityRef = 0
+        try coreMidi {
+            MIDIEndpointGetEntity(endpoint, &ref)
+        }
+        return ref
+    }
+}
+    
 // MARK: - Destinations
 
 public extension SwiftMIDI {

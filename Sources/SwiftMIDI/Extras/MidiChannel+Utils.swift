@@ -47,12 +47,45 @@ public struct MidiChannelsMap: Codable, Equatable {
 
 /// MidiChannelsTranspose
 ///
-/// A 16 transpose values (in semitones) that can be used to change note values coming from channels
+/// A 16 transpose values array (in semitones) that can be used to change note values coming from channels
 public struct MidiChannelsTranspose: Codable, Equatable {
     public var transpose: [Int16] = [Int16].init(repeating: Int16(0), count: 16)
     
     public static let identity = MidiChannelsTranspose()
 
+    public init() {}
+}
+
+/// MidiChannelsValues
+///
+/// A 16 generic values that can be used to store any Midi Value  per channel data.
+/// <0 means no value
+public struct MidiChannelsValues: Codable, Equatable {
+    public var values: [Int16] = [Int16].init(repeating: Int16(-1), count: 16)
+    
+    public static let empty = MidiChannelsValues()
+
+    public var hasAValue: Bool {
+        if values[0] >= 0 { return true }
+        if values[1] >= 0 { return true }
+        if values[2] >= 0 { return true }
+        if values[3] >= 0 { return true }
+        if values[4] >= 0 { return true }
+        if values[5] >= 0 { return true }
+        if values[6] >= 0 { return true }
+        if values[7] >= 0 { return true }
+        
+        if values[8] >= 0 { return true }
+        if values[9] >= 0 { return true }
+        if values[10] >= 0 { return true }
+        if values[11] >= 0 { return true }
+        if values[12] >= 0 { return true }
+        if values[13] >= 0 { return true }
+        if values[14] >= 0 { return true }
+        if values[15] >= 0 { return true }
+        return false
+    }
+    
     public init() {}
 }
 

@@ -31,24 +31,24 @@
 import Foundation
 import CoreMIDI
 
-/// ClockSignal
-///
-/// Use to extract clock ticks from a MidiPacketList
-public struct ClockSignal {
-    public var ticks: Int = 0
-    public var quarterNotes: Int { ticks / 24 }
-    public var timeStamp: MIDITimeStamp?
-    public var channelMask: MidiChannelMask
-    
-    public var didReceive: Bool { return ticks > 0 }
-}
-
-extension ClockSignal: CustomStringConvertible {
-    
-    public var description: String {
-        guard let ts = timeStamp else {
-            return "No Clock Signal Received"
-        }
-        return "Clock Signal - Received \(ticks) - last time: \(ts) - channels: \(channelMask) - QuarterNotes: \(quarterNotes)"
-    }
-}
+///// ClockSignal
+/////
+///// Use to extract clock ticks from a MidiPacketList
+//public struct ClockSignal {
+//    public var ticks: Int = 0
+//    public var quarterNotes: Int { ticks / 24 }
+//    public var timeStamp: MIDITimeStamp?
+//    public var channelMask: MidiChannelMask
+//    
+//    public var didReceive: Bool { return ticks > 0 }
+//}
+//
+//extension ClockSignal: CustomStringConvertible {
+//    
+//    public var description: String {
+//        guard let ts = timeStamp else {
+//            return "No Clock Signal Received"
+//        }
+//        return "Clock Signal - Received \(ticks) - last time: \(ts) - channels: \(channelMask) - QuarterNotes: \(quarterNotes)"
+//    }
+//}

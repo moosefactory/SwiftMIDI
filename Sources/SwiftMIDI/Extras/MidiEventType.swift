@@ -223,3 +223,20 @@ public enum RealTimeMessageType: UInt8, Codable, CustomStringConvertible {
         }
     }
 }
+
+public enum SequencerStatus: Int, CustomStringConvertible {
+    case stopped
+    case running
+    case paused
+    
+    public var description: String {
+        switch self {
+        case .stopped:
+            return "Stopped"
+        case .running:
+            return "Running"
+        case .paused:
+            return "Paused"
+        }
+    }
+}

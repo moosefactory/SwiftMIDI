@@ -38,7 +38,7 @@ public class MidiPacketsFilter {
     public init(settings: MidiFilterSettings) {
         self.settings = settings
     }
-
+    
     
     public class Output {
         /// The filtered packets
@@ -54,49 +54,55 @@ public class MidiPacketsFilter {
         /// Last Real Time Message
         public fileprivate(set) var realTimeMessage: RealTimeMessageType = .none
         
+        /// Last ProgramChange
+        public fileprivate(set) var programChanges: MidiChannelsValues = .empty
+        
         /// The time spent in the filter
         public fileprivate(set) var filteringTime: TimeInterval = 0
-        
         
         /// Ticks received.
         /// If everything runs smoothly, there is always one tick, but if a stall occurs, buffer can contains several ticks
         public fileprivate(set) var ticks: UInt8 = 0
         
+        public fileprivate(set) var timeStamp: MIDITimeStamp = 0
+        
         init(packets: MIDIPacketList?) {
             self.packets = packets
         }
     }
-
+    
     /// Returns the number of events with the given types, channels and range
     ///
     /// This function code is quite long, but performant.
     
-    private func preflight(in packetList: UnsafePointer<MIDIPacketList>) -> (UInt32, UInt32) {
+    private func preflight(in packetList: UnsafePointer<MIDIPacketList>) -> (UInt32, UInt32, UInt32) {
         var numberOfEvents: UInt32 = 0
         var dataSize: UInt32 = 0
         var p = packetList.pointee.packet
-        let length = Int(p.length)
-        for _ in 0 ..< packetList.pointee.numPackets {
-            
-            // Scan the midi data and cut if necessary
-            
-            var currentStatus: UInt8 = 0
-            var type: UInt8 = 0
-            var channel: UInt8 = 0
-            // true if current byte is velocity
-            var byteSelector: Bool = false
-            // true if the whole event is skipped
-            var skipTrain = false
-            // the length of data bytes following the status byte
-            // if 0, then we can remove the status byte
-            var trainLength: UInt32 = 0
-            var trainDataSize: UInt32 = 0
-            var skipNote: Bool = false
-            var byte: UInt8 = 0
-            var checkedStatus: Bool = false
-            
-            withUnsafeBytes(of: &p.data) { bytes in
-                for i in 0..<length {
+        let numberOfPackets = packetList.pointee.numPackets
+        
+        
+        // Scan the midi data and cut if necessary
+        
+        var currentStatus: UInt8 = 0
+        var type: UInt8 = 0
+        var channel: UInt8 = 0
+        // true if current byte is velocity
+        var byteSelector: Bool = false
+        // true if the whole event is skipped
+        var skipTrain = false
+        
+        var skipNote: Bool = false
+        var byte: UInt8 = 0
+        var checkedStatus: Bool = false
+        var keepStatus: Bool = false
+        
+        for _ in 0 ..< numberOfPackets {
+            withUnsafeBytes(of: p.data) { bytes in
+                // In some cases, like pausing xCode, it looks like the packet size can grow far beyond the limit
+                // so we only process the first 256 bytes. I'm not sure of what I am doing here,
+                // but I'm sure it crashes if i >= 256
+                for i in 0..<min(Int(p.length), 256) {
                     byte = UInt8(bytes[i])
                     
                     // Read Status Byte if needed
@@ -105,11 +111,8 @@ public class MidiPacketsFilter {
                     
                     if byte & 0xF0 >= 0x80  {
                         
-                        // Got a new status, deal with previously read events train
-                        if trainLength > 0 {
-                            dataSize += trainDataSize + 1 // for status byte
-                            numberOfEvents += trainLength
-                        }
+                        // We keep status only if subsequent events are kept
+                        keepStatus = false
                         
                         currentStatus = byte
                         type = currentStatus & 0xF0
@@ -118,18 +121,15 @@ public class MidiPacketsFilter {
                         skipNote = false
                         // Reset the skip flag
                         skipTrain = false
-                        // Reset train
-                        trainLength = 0
-                        trainDataSize = 0
+                        
                         byteSelector = false
                         checkedStatus = false
                         if type == MidiEventType.realTimeMessage.rawValue {
                             if !settings.eventTypes.contains(rawEventType: type) {
                                 continue
                             }
-                            
-                            trainLength += 1
                             dataSize += 1
+                            numberOfEvents += 1
                         }
                         
                         continue
@@ -177,8 +177,12 @@ public class MidiPacketsFilter {
                                 
                                 // Still not skip the note, we count it to
                                 if !skipNote {
-                                    trainDataSize += 2
-                                    trainLength += 1
+                                    dataSize += 2
+                                    numberOfEvents += 1
+                                    if (!keepStatus) {
+                                        keepStatus = true
+                                        dataSize += 1
+                                    }
                                 } else {
                                     // reset skipNote for the next note
                                     skipNote = false
@@ -200,9 +204,13 @@ public class MidiPacketsFilter {
                         
                         // Check if current byte is note or velocity ( no meaning on note off, but still there )
                         if byteSelector {
-                            trainDataSize += 2
-                            trainLength += 1
+                            dataSize += 2
+                            numberOfEvents += 1
                             byteSelector = false
+                            if (!keepStatus) {
+                                keepStatus = true
+                                dataSize += 1
+                            }
                         } else {
                             byteSelector = true
                         }
@@ -211,9 +219,13 @@ public class MidiPacketsFilter {
                         
                         // Check if current byte is control number or value
                         if byteSelector {
-                            trainDataSize += 2
-                            trainLength += 1
+                            dataSize += 2
+                            numberOfEvents += 1
                             byteSelector = false
+                            if (!keepStatus) {
+                                keepStatus = true
+                                dataSize += 1
+                            }
                         } else {
                             byteSelector = true
                         }
@@ -222,9 +234,13 @@ public class MidiPacketsFilter {
                         
                         // Check if current byte is control number or value
                         if byteSelector {
-                            trainDataSize += 2
-                            trainLength += 1
+                            dataSize += 2
+                            numberOfEvents += 1
                             byteSelector = false
+                            if (!keepStatus) {
+                                keepStatus = true
+                                dataSize += 1
+                            }
                         } else {
                             byteSelector = true
                         }
@@ -232,9 +248,13 @@ public class MidiPacketsFilter {
                     case MidiEventType.polyAfterTouch.rawValue:
                         
                         if byteSelector {
-                            trainDataSize += 2
-                            trainLength += 1
+                            dataSize += 2
+                            numberOfEvents += 1
                             byteSelector = false
+                            if (!keepStatus) {
+                                keepStatus = true
+                                dataSize += 1
+                            }
                         } else {
                             byteSelector = true
                         }
@@ -242,12 +262,20 @@ public class MidiPacketsFilter {
                     // 1 data byte events
                     
                     case MidiEventType.afterTouch.rawValue:
-                        trainDataSize += 1
-                        trainLength += 1
+                        if (!keepStatus) {
+                            keepStatus = true
+                            dataSize += 1
+                        }
+                        dataSize += 1
+                        numberOfEvents += 1
                         
                     case MidiEventType.programChange.rawValue:
-                        trainDataSize += 1
-                        trainLength += 1
+                        if (!keepStatus) {
+                            keepStatus = true
+                            dataSize += 1
+                        }
+                        dataSize += 1
+                        numberOfEvents += 1
                         
                     // 0 data byte events
                     
@@ -258,19 +286,13 @@ public class MidiPacketsFilter {
                     } // End switch
                     
                 } // End scan
-                
-                // If last train has data, add it
-                if trainLength > 0 {
-                    dataSize += trainDataSize + 1 // for status byte
-                    numberOfEvents += trainLength
-                }
             }
             
             // Go to next packet ( should never happen for musical events )
             p = MIDIPacketNext(&p).pointee
         }
         
-        return (numberOfEvents, dataSize)
+        return (numberOfPackets, numberOfEvents, dataSize)
     }
     
     // MARK: - Filtering
@@ -285,11 +307,12 @@ public class MidiPacketsFilter {
         
         if settings.willPassThrough { return Output(packets: packetList.pointee) }
         
-        var chrono = Date()
-
+        let chrono = Date()
+        
         // Get final number of events
-        let (count, dataSize) = preflight(in: packetList)
-        guard count > 0 else { return Output(packets: nil) }
+        let (numberOfPackets, count, dataSize) = preflight(in: packetList)
+        guard count > 0 else {
+            return Output(packets: nil) }
         
         var outPackets = MIDIPacketList()
         let writePacketPtr = MIDIPacketListInit(&outPackets)
@@ -302,32 +325,31 @@ public class MidiPacketsFilter {
             var writeIndex = 0
             
             var p = packetList.pointee.packet
-            var length = Int(p.length)
-            for _ in 0 ..< packetList.pointee.numPackets {
-                
-                // Scan the midi data and cut if necessary
-                
-                var currentStatus: UInt8 = 0
-                var type: UInt8 = 0
-                var channel: UInt8 = 0
-                // true if current byte is velocity
-                var byteSelector: Bool = false
-                // true if the whole event is skipped
-                var skipTrain = false
-                // the length of data bytes following the status byte
-                // if 0, then we can remove the status byte
-                var trainLength: UInt32 = 0
-                var trainDataSize: UInt32 = 0
-                var skipNote: Bool = false
-                var byte: UInt8 = 0
-                
-                var data1: UInt8 = 0
-                var note: Int16 = 0
-                
-                var wroteStatus: Bool = false
-                
-                withUnsafeBytes(of: &p.data) { bytes in
-                    for i in 0..<length {
+            
+            // Scan the midi data and cut if necessary
+            
+            var currentStatus: UInt8 = 0
+            var type: UInt8 = 0
+            var channel: UInt8 = 0
+            // true if current byte is velocity
+            var byteSelector: Bool = false
+            // true if the whole event is skipped
+            var skipTrain = false
+            
+            // the length of data bytes following the status byte
+            // if 0, then we can remove the status byte
+            var skipNote: Bool = false
+            var byte: UInt8 = 0
+            
+            var data1: UInt8 = 0
+            var note: Int16 = 0
+            
+            var wroteStatus: Bool = false
+            
+            for _ in 0 ..< numberOfPackets {
+                output.timeStamp = p.timeStamp
+                withUnsafeBytes(of: p.data) { bytes in
+                    for i in 0..<min(Int(p.length), 256) {
                         byte = UInt8(bytes[i])
                         
                         // Read Status Byte if needed
@@ -335,17 +357,6 @@ public class MidiPacketsFilter {
                         // 1 - read status
                         
                         if byte & 0xF0 >= 0x80  {
-                            
-                            // Got a new status, deal with previously read events train
-                            if trainLength > 0 {
-                                
-                                // --- WRITE ----
-                                // Write index is on previous event byte, advance by one
-                                // if train length is 0, previous status byte will be over-written
-                                writeIndex += 1
-                                // -------------
-                            }
-                            
                             currentStatus = byte
                             type = currentStatus & 0xF0
                             channel = currentStatus & 0x0F
@@ -353,11 +364,9 @@ public class MidiPacketsFilter {
                             skipNote = false
                             // Reset the skip flag
                             skipTrain = false
-                            // Reset train
-                            trainLength = 0
-                            trainDataSize = 0
                             byteSelector = false
                             
+                            /// We write status only if some data are kept
                             wroteStatus = false
                             data1 = 0
                             
@@ -375,12 +384,11 @@ public class MidiPacketsFilter {
                                 else {
                                     output.realTimeMessage = RealTimeMessageType(rawValue: currentStatus) ?? .none
                                 }
-
-                                // --- WRITE ----
-
-                                trainLength += 1
-                                targetBytes[writeIndex] = byte
                                 
+                                // --- WRITE ----
+                                
+                                targetBytes[writeIndex] = byte
+                                writeIndex += 1
                             }
                             else {
                                 if settings.tracksActivatedChannels {
@@ -397,25 +405,16 @@ public class MidiPacketsFilter {
                         
                         // 3 - We have an event - filter by channel and type
                         
-                        // We have chances to keep events, write status in target bytes
-                        if !wroteStatus {
-                            wroteStatus = true
-                            targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                            
-                            // filter events
-                            if !settings.eventTypes.contains(rawEventType: type) {
-                                skipTrain = true
-                                continue
-                            }
-                            
-                            // filter channel
-                            if (settings.channels & (0x0001 << channel)) == 0 {
-                                skipTrain = true
-                                continue
-                            }
-                        } else {
-                            if skipTrain { continue }
+                        // filter events
+                        if !settings.eventTypes.contains(rawEventType: type) {
+                            skipTrain = true
+                            continue
+                        }
+                        
+                        // filter channel
+                        if (settings.channels & (0x0001 << channel)) == 0 {
+                            skipTrain = true
+                            continue
                         }
                         
                         // 4 - So far so good, now we are in potentially kept events data.
@@ -435,9 +434,6 @@ public class MidiPacketsFilter {
                                     
                                     // Still not skip the note, we count it
                                     if !skipNote {
-                                        trainDataSize += 2
-                                        trainLength += 1
-                                        
                                         // Transpose
                                         note = Int16(data1)
                                         if settings.globalTranspose != 0 {
@@ -466,10 +462,16 @@ public class MidiPacketsFilter {
                                         }
                                         
                                         // --- WRITE ----
-                                        writeIndex += 1
+                                        if !wroteStatus {
+                                            wroteStatus = true
+                                            targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                                | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                            writeIndex += 1
+                                        }
                                         targetBytes[writeIndex] = data1
                                         writeIndex += 1
                                         targetBytes[writeIndex] = byte
+                                        writeIndex += 1
                                         // -------------
                                         
                                     } else {
@@ -495,10 +497,6 @@ public class MidiPacketsFilter {
                             
                             // Check if current byte is note or velocity ( no meaning on note off, but still there )
                             if byteSelector {
-                                trainDataSize += 2
-                                trainLength += 1
-                                
-                                
                                 // Transpose
                                 note = Int16(data1)
                                 if settings.globalTranspose != 0 {
@@ -516,10 +514,16 @@ public class MidiPacketsFilter {
                                 }
                                 
                                 // --- WRITE ----
-                                writeIndex += 1
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                    writeIndex += 1
+                                }
                                 targetBytes[writeIndex] = data1
                                 writeIndex += 1
                                 targetBytes[writeIndex] = byte
+                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -532,14 +536,17 @@ public class MidiPacketsFilter {
                             
                             // Check if current byte is control number or value
                             if byteSelector {
-                                trainDataSize += 2
-                                trainLength += 1
-                                
                                 // --- WRITE ----
-                                writeIndex += 1
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                    writeIndex += 1
+                                }
                                 targetBytes[writeIndex] = data1
                                 writeIndex += 1
                                 targetBytes[writeIndex] = byte
+                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -552,14 +559,18 @@ public class MidiPacketsFilter {
                             
                             // Check if current byte is control number or value
                             if byteSelector {
-                                trainDataSize += 2
-                                trainLength += 1
-                                
                                 // --- WRITE ----
-                                writeIndex += 1
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                    writeIndex += 1
+                                }
+                                
                                 targetBytes[writeIndex] = data1
                                 writeIndex += 1
                                 targetBytes[writeIndex] = byte
+                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -571,14 +582,17 @@ public class MidiPacketsFilter {
                         case MidiEventType.polyAfterTouch.rawValue:
                             
                             if byteSelector {
-                                trainDataSize += 2
-                                trainLength += 1
-                                
                                 // --- WRITE ----
-                                writeIndex += 1
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                    writeIndex += 1
+                                }
                                 targetBytes[writeIndex] = data1
                                 writeIndex += 1
                                 targetBytes[writeIndex] = byte
+                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -590,21 +604,31 @@ public class MidiPacketsFilter {
                         // 1 data byte events
                         
                         case MidiEventType.afterTouch.rawValue:
-                            trainDataSize += 1
-                            trainLength += 1
-                            
                             // --- WRITE ----
-                            writeIndex += 1
+                            if !wroteStatus {
+                                wroteStatus = true
+                                targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                writeIndex += 1
+                            }
+                            
                             targetBytes[writeIndex] = byte
+                            writeIndex += 1
                         // -------------
                         
                         case MidiEventType.programChange.rawValue:
-                            trainDataSize += 1
-                            trainLength += 1
                             
+                            output.programChanges.values[Int(channel)] = Int16(byte)
                             // --- WRITE ----
-                            writeIndex += 1
+                            if !wroteStatus {
+                                wroteStatus = true
+                                targetBytes[writeIndex] = (currentStatus & 0xF0)
+                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F)
+                                writeIndex += 1
+                            }
+                            
                             targetBytes[writeIndex] = byte
+                            writeIndex += 1
                         // -------------
                         
                         // 0 data byte events
@@ -617,12 +641,12 @@ public class MidiPacketsFilter {
                         
                     } // End scan
                 }
+                // Go to next packet ( should never happen for musical events )
+                p = MIDIPacketNext(&p).pointee
             }
-            // Go to next packet ( should never happen for musical events )
-            p = MIDIPacketNext(&p).pointee
         }
         
-        MIDIPacketListAdd(&outPackets, Int(14 + dataSize), writePacketPtr, 0, Int(dataSize), targetBytes)
+        MIDIPacketListAdd(&outPackets, Int(14 + dataSize), writePacketPtr, output.timeStamp, Int(dataSize), targetBytes)
         
         output.filteringTime = -chrono.timeIntervalSinceNow
         output.packets = outPackets

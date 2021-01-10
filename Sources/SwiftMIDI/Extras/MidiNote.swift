@@ -86,16 +86,6 @@ public extension MidiNote {
     }
 }
 
-public extension MIDIPacket {
-    
-    var note: MidiNote? {
-        guard MidiEventType(rawValue: data.0 & 0xF0) == .noteOn else {
-            return nil
-        }
-        return MidiNote(note: data.1, velocity: data.2)
-    }
-}
-
 // MARK: - Note <-> MidiEvent
 
 public extension MidiNote {

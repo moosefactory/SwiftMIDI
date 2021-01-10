@@ -87,6 +87,43 @@ public extension SwiftMIDI {
         return ref
     }
 
+    /// MIDIGetNumberOfExternalDevices
+    /// Returns the number of external MIDI devices in the system.
+    ///
+    /// - returns The number of external devices in the system
+    ///
+    /// External MIDI devices are MIDI devices connected to driver endpoints via a standard MIDI
+    /// cable. Their presence is completely optional, only when a UI (such as Audio MIDI Setup)
+    /// adds them.
+
+    @available(macOS 10.0, *)
+    static func getNumberOfExternalDevices() throws -> Int {
+        let numberOfDevices = MIDIGetNumberOfExternalDevices()
+        guard numberOfDevices > 0 else {
+            throw Errors.noDeviceInSystem
+        }
+        return numberOfDevices
+    }
+
+    /// MIDIGetExternalDevice
+    /// Returns one of the external devices in the system.
+    ///
+    /// -parameter index
+    /// The index of the device to return.
+    ///
+    /// - returns A reference to a device
+    ///
+    /// Use this to enumerate the external devices in the system.
+
+    @available(macOS 10.0, *)
+    static func getExternalDevice(at index: Int) throws -> MIDIDeviceRef {
+        let ref = MIDIGetExternalDevice(index)
+        guard ref != 0 else {
+            throw Errors.externalDeviceIndexOutOfRange
+        }
+        return ref
+    }
+
     // MARK: - Entities
     
     /// MIDIDeviceGetNumberOfEntities
@@ -98,7 +135,7 @@ public extension SwiftMIDI {
     /// - returns The number of entities the device contains
     
     @available(macOS 10.0, *)
-    static func getNumberOfEntities(in device: MIDIDeviceRef) throws -> Int {
+    static func getNumberOfEntities(for device: MIDIDeviceRef) throws -> Int {
         let numberOfEntities = MIDIDeviceGetNumberOfEntities(device)
         guard numberOfEntities > 0 else {
             throw Errors.noEntityInSystem
@@ -117,19 +154,105 @@ public extension SwiftMIDI {
     /// - returns A reference to an entity
 
     @available(macOS 10.0, *)
-    static func getEntity(in device: MIDIDeviceRef, at index: Int) throws -> MIDIEntityRef {
+    static func getEntity(for device: MIDIDeviceRef, at index: Int) throws -> MIDIEntityRef {
         let ref = MIDIDeviceGetEntity(device, index)
         guard ref != 0 else {
             throw Errors.entityIndexOutOfRange
         }
         return ref
     }
+    
+    // MARK: - Access Entities Sources and Destinations
+    
+    /// MIDIEntityGetNumberOfSources
+    /// Returns the number of sources in a given entity.
+    ///
+    /// - parameter entity
+    /// The entity being queried
+    ///
+    /// - returns The number of sources the entity contains
+    
+    @available(macOS 10.0, *)
+    static func numberOfSources(for entity: MIDIEntityRef) throws -> Int {
+        let numberOfSources = MIDIEntityGetNumberOfSources(entity)
+        guard numberOfSources > 0 else {
+            throw Errors.entityIndexOutOfRange
+        }
+        return numberOfSources
+    }
+
+    /// MIDIEntityGetSource
+    /// Returns one of a given entity's sources.
+    ///
+    /// - parameter entity
+    /// The entity being queried.
+    /// - parameter index
+    /// The index of the source to return
+    ///
+    /// - returns A reference to a source, or NULL if an error occurred.
+
+    @available(macOS 10.0, *)
+    static func source(for entity: MIDIEntityRef, at index: Int) throws -> MIDIEndpointRef {
+        let source = MIDIEntityGetDestination(entity, index)
+        guard source != 0 else {
+            throw Errors.sourceIndexOutOfRange
+        }
+        return source
+    }
+
+    /// MIDIEntityGetNumberOfDestinations
+    /// Returns the number of destinations in a given entity.
+    ///
+    /// - parameter entity
+    /// The entity being queried
+    ///
+    /// - returns The number of destinations the entity contains
+
+    @available(macOS 10.0, *)
+    static func numberOfDestinations(for entity: MIDIEntityRef) throws -> Int {
+        let numberOfDestinations = MIDIEntityGetNumberOfDestinations(entity)
+        guard numberOfDestinations > 0 else {
+            throw Errors.entityIndexOutOfRange
+        }
+        return numberOfDestinations
+    }
+
+    /// MIDIEntityGetDestination
+    /// Returns one of a given entity's destinations.
+    ///
+    /// - parameter entity
+    /// The entity being queried.
+    /// - parameter index
+    /// The index of the destination to return
+    ///
+    /// - returns A reference to a destination
+    
+    @available(macOS 10.0, *)
+    static func destination(for entity: MIDIEntityRef, at index: Int) throws -> MIDIEndpointRef {
+        let destination = MIDIEntityGetDestination(entity, index)
+        guard destination != 0 else {
+            throw Errors.destinationIndexOutOfRange
+        }
+        return destination
+    }
 }
 
-// MARK: - SwiftMIDI extension
+// MARK: - SwiftMIDI extension -
 
 public extension SwiftMIDI {
     
+    /// Number of devices
+    
+    static var numberOfDevices: Int {
+        return (try? getNumberOfDevices()) ?? 0
+    }
+    
+    /// Devices
+    
+    static var devices: [MIDIDeviceRef] {
+        return (try? allDevices()) ?? []
+    }
+
     /// Iterates through all devices in system
     
     static func forEachDevice(do closure: (Int, MIDIDeviceRef)->Void) throws {
@@ -152,9 +275,9 @@ public extension SwiftMIDI {
     /// Iterates through all entities in passed device ref
     
     static func forEachEntity(in device: MIDIDeviceRef, do closure: (Int, MIDIEntityRef)->Void) throws {
-        let numberOfEntities = try getNumberOfEntities(in: device)
+        let numberOfEntities = try getNumberOfEntities(for: device)
         for index in 0..<numberOfEntities {
-            if let entity = try? SwiftMIDI.getEntity(in: device, at: index) {
+            if let entity = try? SwiftMIDI.getEntity(for: device, at: index) {
                 closure(index, entity)
             }
         }

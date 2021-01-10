@@ -50,8 +50,10 @@ public extension SwiftMIDI {
         case entityIndexOutOfRange
         
         case noDeviceInSystem
+        case noExternalDeviceInSystem
         case deviceIndexOutOfRange
-        
+        case externalDeviceIndexOutOfRange
+
 
         /// To use when checking MIDIObjectRef before use it in core midi
         case sourceRefNotSet
@@ -82,6 +84,11 @@ public extension SwiftMIDI {
                 return "\(prefix)No Midi Device in System"
             case .deviceIndexOutOfRange:
                 return "\(prefix)Device Index Out Of Range"
+
+            case .noExternalDeviceInSystem:
+                return "\(prefix)No External Midi Device in System"
+            case .externalDeviceIndexOutOfRange:
+                return "\(prefix)External Device Index Out Of Range"
 
 
             case .sourceRefNotSet:
