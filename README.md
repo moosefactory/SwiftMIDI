@@ -24,13 +24,13 @@ func MIDIThruConnectionFind(_ inPersistentOwnerID: CFString, _ outConnectionList
 
 The **SwiftMIDICenter** framework adding some more system oriented features like storage and configurations management.
 
-[https://github.com/moosefactory/SwiftMIDICenter]()
+[https://github.com/moosefactory/SwiftMidiCenter](https://github.com/moosefactory/SwiftMidiCenter)
 
 You can see both working in a sample project developed in SwiftUI : **SwiftMidiCenter App**
 
-[https://github.com/moosefactory/MIDICenterApp]()
+[https://github.com/moosefactory/MidiCenterApp](https://github.com/moosefactory/MidiCenterApp)
 
-![Scheme](SwiftMIDI ReadMe Scheme.jpg)
+![Scheme](Documentation/SwiftMIDI_ReadMe_Scheme.jpg)
 
 ## <font color='#1E72AD'>Installation</font>
 
