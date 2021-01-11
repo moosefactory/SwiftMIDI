@@ -35,14 +35,31 @@ public class MidiPacketsFilter {
     
     public var settings: MidiFilterSettings
     
+    public var filterState: FilterState
+    
     public init(settings: MidiFilterSettings) {
         self.settings = settings
+        self.filterState = FilterState()
     }
     
     
+    /// Some devices send one packet per midi event ( Like Kurzweil PC3K ) - By the way it is wrong
+    /// So we keep some usefull information from previous packet
+    public struct FilterState {
+        var lsbValue: UInt8 = 0xFF
+        var msbValue: UInt8 = 0xFF
+        
+        // Initial bank is 0 - so real program number won't be correct until a bank select is received on each channel
+        var bank: MidiChannelsValues = .empty
+    }
+    
+    /// The filter output contains the filtered packets, but it also keeps some relevant values that the client can use
     public class Output {
         /// The filtered packets
         public fileprivate(set) var packets: MIDIPacketList?
+        
+        /// Last packet timestamp
+        public fileprivate(set) var timeStamp: MIDITimeStamp = 0
         
         /// Will contains channels that have received musical events
         public fileprivate(set) var activatedChannels = MidiChannelMask.none
@@ -51,11 +68,20 @@ public class MidiPacketsFilter {
         /// If channel bit is not set in activated channels, this has no meaning
         public fileprivate(set) var higherAndLowerNotes = [MidiRange].init(repeating: MidiRange(lower: 127 , higher: 0), count: 16)
         
+        /// Last control values
+        public fileprivate(set) var controlValues: MidiChannelsControlValues = .empty
+        
         /// Last Real Time Message
         public fileprivate(set) var realTimeMessage: RealTimeMessageType = .none
         
         /// Last ProgramChange
         public fileprivate(set) var programChanges: MidiChannelsValues = .empty
+        
+        /// Last BankSelect
+        public fileprivate(set) var bankSelect: MidiChannelsValues = .empty
+        
+        /// Last PitchBend
+        public fileprivate(set) var pitchBend: MidiChannelsValues = .empty
         
         /// The time spent in the filter
         public fileprivate(set) var filteringTime: TimeInterval = 0
@@ -64,7 +90,17 @@ public class MidiPacketsFilter {
         /// If everything runs smoothly, there is always one tick, but if a stall occurs, buffer can contains several ticks
         public fileprivate(set) var ticks: UInt8 = 0
         
-        public fileprivate(set) var timeStamp: MIDITimeStamp = 0
+        /// Returns the fractionnal pitch bend ( [-1.0..+1.0] )
+        public func pitchBend(for channel: Int) -> Float {
+            return Float(pitchBend.value(for: channel)) / Float(0x3FFF) * 2 - 1
+        }
+        
+        /// Returns the program number as displayed on the device ( > to 127 if bank > 0 )
+        public func programNumber(for channel: Int) -> Int {
+            let bank = bankSelect.values[Int(channel)]
+            let pgm = programChanges.value(for: channel)
+            return Int(bank) * 128 + Int(pgm)
+        }
         
         init(packets: MIDIPacketList?) {
             self.packets = packets
@@ -333,6 +369,9 @@ public class MidiPacketsFilter {
             var channel: UInt8 = 0
             // true if current byte is velocity
             var byteSelector: Bool = false
+            
+            // Special control byte selector, to handle bank changes
+            var controlByteSelector: Bool = false
             // true if the whole event is skipped
             var skipTrain = false
             
@@ -344,9 +383,15 @@ public class MidiPacketsFilter {
             var data1: UInt8 = 0
             var note: Int16 = 0
             
+            // Tells if the status byte has already been written we keep an event
+            // ( running status requires only one status byte before a train of events of the same type )
             var wroteStatus: Bool = false
             
+            // The control number being scanned. We need it to capture 2 significant bytes controls
+            var controlNumber: UInt8 = 0
+            
             for _ in 0 ..< numberOfPackets {
+                if writeIndex >= dataSize { continue }
                 output.timeStamp = p.timeStamp
                 withUnsafeBytes(of: p.data) { bytes in
                     for i in 0..<min(Int(p.length), 256) {
@@ -369,6 +414,8 @@ public class MidiPacketsFilter {
                             /// We write status only if some data are kept
                             wroteStatus = false
                             data1 = 0
+                            
+                            controlNumber = 0
                             
                             // Process data-less types
                             
@@ -404,6 +451,58 @@ public class MidiPacketsFilter {
                         if skipTrain { continue }
                         
                         // 3 - We have an event - filter by channel and type
+                        
+                        // Process bank select. We process it apart since the type is a control, but the real event type is a program change
+                        
+                        if type == MidiEventType.control.rawValue {
+                            
+                            // If we filter control we skip this, unless we receve a program change
+                            // If we filter program changes, we skip this too unless we have a control
+                            if !settings.eventTypes.contains(.control) && (byte != 00 || byte != 32) {
+                                skipTrain = true
+                                continue
+                            } else if !settings.eventTypes.contains(.programChange) && (byte == 00 || byte == 32) {
+                                skipTrain = true
+                                continue
+                            }
+                            
+                            if controlByteSelector == false {
+                                controlNumber = byte
+                                controlByteSelector = true
+                            }
+                            // We process two values controls ( number < 64 )
+                            else if controlNumber < 120 {
+                                if controlNumber < 64 {
+                                controlByteSelector = false
+                                
+                                if controlNumber >= 32 && controlNumber < 64 && filterState.lsbValue == 0xFF {
+                                    filterState.lsbValue = byte
+                                }
+                                else if controlNumber >= 0 && controlNumber < 32 && filterState.msbValue == 0xFF {
+                                    filterState.msbValue = byte
+                                }
+                                
+                                if filterState.msbValue != 0xFF && filterState.lsbValue != 0xFF {
+                                    if controlNumber == 0 || controlNumber == 32 {
+                                        let shiftedMSB = settings.limitTo127Banks ? 0 : Int16(filterState.msbValue << 7)
+                                        let bankNumber = shiftedMSB | Int16(filterState.lsbValue)
+                                        filterState.lsbValue = 0xFF
+                                        filterState.msbValue = 0xFF
+                                        filterState.bank.values[Int(channel)] = bankNumber
+                                    }
+                                }
+                                } else {
+                                    output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                                    controlNumber = 0
+                                }
+                            }
+                        } else {
+                            // If a control in the 0..63 range has been caught without msb or lsb, we store the value
+                            if controlNumber > 0 {
+                                output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                                controlNumber = 0
+                            }
+                        }
                         
                         // filter events
                         if !settings.eventTypes.contains(rawEventType: type) {
@@ -573,6 +672,8 @@ public class MidiPacketsFilter {
                                 writeIndex += 1
                                 // -------------
                                 
+                                output.pitchBend.values[Int(channel)] = ( Int16(data1) + Int16(byte) << 7)
+                                
                                 byteSelector = false
                             } else {
                                 data1 = byte
@@ -641,6 +742,13 @@ public class MidiPacketsFilter {
                         
                     } // End scan
                 }
+                    
+                // If a controlNumber that potentially takes 2 bytes is set and has not be completed, we store the value
+                if controlNumber > 0 && controlNumber < 64 {
+                    output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                    controlNumber = 0
+                }
+
                 // Go to next packet ( should never happen for musical events )
                 p = MIDIPacketNext(&p).pointee
             }
@@ -648,6 +756,7 @@ public class MidiPacketsFilter {
         
         MIDIPacketListAdd(&outPackets, Int(14 + dataSize), writePacketPtr, output.timeStamp, Int(dataSize), targetBytes)
         
+        output.bankSelect = filterState.bank
         output.filteringTime = -chrono.timeIntervalSinceNow
         output.packets = outPackets
         return output

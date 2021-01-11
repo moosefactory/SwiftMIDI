@@ -33,26 +33,17 @@
 
 import Foundation
 import CoreMIDI
-
-// MARK: - Access Endpoint Entity
-
-public extension SwiftMIDI {
-
-    /// Returns the entity for given endpoint
-    static func getEntity(for endpoint: MIDIEndpointRef) throws -> MIDIEntityRef {
-        var ref: MIDIEntityRef = 0
-        try coreMidi {
-            MIDIEndpointGetEntity(endpoint, &ref)
-        }
-        return ref
-    }
-}
     
 // MARK: - Destinations
 
 public extension SwiftMIDI {
     
-    /// Returns the number of midi destinations
+    /// MIDIGetNumberOfDestinations
+    /// Returns the number of destinations in the system.
+    ///
+    /// - returns  The number of destinations in the system
+
+    @available(macOS 10.0, *)
     static func getNumberOfDestinations() throws -> Int {
         let count = MIDIGetNumberOfDestinations()
         if count == 0 {
@@ -61,7 +52,15 @@ public extension SwiftMIDI {
         return count
     }
     
-    /// Returns the destination at given index
+    /// MIDIGetDestination
+    /// Returns one of the destinations in the system.
+    ///
+    /// - parameter index
+    /// The index of the destination to return
+    ///
+    /// - returns A reference to a destination, or NULL if an error occurred.
+
+    @available(macOS 10.0, *)
     static func destination(at index: Int) throws -> MIDIEndpointRef {
         let numberOfDestinations = try getNumberOfDestinations()
         guard index >= 0 && index < numberOfDestinations else {
@@ -69,12 +68,14 @@ public extension SwiftMIDI {
         }
         return MIDIGetDestination(index)
     }
+}
+
+// MARK: - SwiftMIDI Extension
+
+public extension SwiftMIDI {
     
-    /// Iterates through all destinations
-    static func forEachDestination(_ block: (Int, MIDIEndpointRef)->Void) {
-        for index in 0..<MIDIGetNumberOfDestinations() {
-            block(index, MIDIGetDestination(index))
-        }
+    static var numberOfDestinations: Int {
+        return (try? getNumberOfDestinations()) ?? 0
     }
     
     /// Returns an array with all midi sestinations
@@ -85,14 +86,26 @@ public extension SwiftMIDI {
         }
         return out
     }
-
+    
+    /// Iterates through all destinations
+    static func forEachDestination(do block: (Int, MIDIEndpointRef)->Void) {
+        for index in 0..<MIDIGetNumberOfDestinations() {
+            block(index, MIDIGetDestination(index))
+        }
+    }
 }
 
 // MARK: - Sources
 
 public extension SwiftMIDI {
     
-    /// Returns the number of midi sources
+    /// MIDIGetSource
+    /// Returns one of the sources in the system.
+    ///
+    /// - parameter index : The index of the source to return
+    /// - returns : A reference to a source
+
+    @available(macOS 10.0, *)
     static func getNumberOfSources() throws -> Int {
         let count = MIDIGetNumberOfSources()
         if count == 0 {
@@ -101,7 +114,12 @@ public extension SwiftMIDI {
         return count
     }
 
-    /// Returns the source at given index
+    /// MIDIGetNumberOfDestinations
+    /// Returns the number of destinations in the system.
+    ///
+    /// - returns : The number of destinations in the system
+
+    @available(macOS 10.0, *)
     static func source(at index: Int) throws -> MIDIEndpointRef {
         let numberOfSources = try getNumberOfSources()
         guard index >= 0 && index < numberOfSources else {
@@ -125,39 +143,28 @@ public extension SwiftMIDI {
         }
         return out
     }
-    
-    /// connectSource
-    /// Establishes a connection from a source to a client's input port.
-    
-    /// - parameter port
-    /// The port to which to create the connection.  This port's
-    /// readProc is called with incoming MIDI from the source.
-    /// - parameter source
-    /// The source from which to create the connection.
-    /// - parameter connRefCon
-    /// This refCon is passed to the port's MIDIReadProc or MIDIReadBlock, as a way to
-    /// identify the source.
-    
-    @available(macOS 10.0, *)
-    static func connect(source: MIDIEndpointRef, to port: MIDIPortRef, refCon: UnsafeMutableRawPointer? = nil) throws {
-        try coreMidi {
-            MIDIPortConnectSource(port, source, refCon)
-        }
-    }
-    
-    /// disconnectSource
-    /// Closes a previously-established source-to-input port  connection.
-    ///
-    /// - parameter port
-    /// The port whose connection is being closed.
-    /// - parameter source
-    /// The source from which to close a connection to the
-    /// specified port.
-    @available(macOS 10.0, *)
-    static func disconnect(source: MIDIEndpointRef, from port: MIDIPortRef) throws {
-        try coreMidi {
-            MIDIPortDisconnectSource(port, source)
-        }
-    }
 }
 
+
+// MARK: - Access Endpoint Entity
+
+public extension SwiftMIDI {
+
+    /// MIDIEndpointGetEntity
+    /// Returns an endpoint's entity.
+    ///
+    /// - parameter endPoint : The endpoint being queried.
+    ///
+    /// - returns the endpoint's owning entity
+    ///
+    /// Virtual sources and destinations don't have entities.
+
+    @available(macOS 10.2, *)
+    static func getEntity(for endpoint: MIDIEndpointRef) throws -> MIDIEntityRef {
+        var ref: MIDIEntityRef = 0
+        try coreMidi {
+            MIDIEndpointGetEntity(endpoint, &ref)
+        }
+        return ref
+    }
+}

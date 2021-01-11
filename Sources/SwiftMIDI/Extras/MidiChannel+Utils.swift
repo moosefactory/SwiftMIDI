@@ -56,6 +56,58 @@ public struct MidiChannelsTranspose: Codable, Equatable {
     public init() {}
 }
 
+/// MidiChannelsControlValues
+///
+/// A 16 transpose values array (in semitones) that can be used to change note values coming from channels
+public struct MidiChannelsControlValues: Codable, Equatable {
+    public var controlStates: [AllControlsState] = [AllControlsState].init(repeating: .empty, count: 16)
+    
+    public static let empty = MidiChannelsControlValues()
+
+    public init() {}
+    
+    public var hasAValue: Bool {
+        if controlStates[0].hasValue { return true }
+        if controlStates[1].hasValue { return true }
+        if controlStates[2].hasValue { return true }
+        if controlStates[3].hasValue { return true }
+        if controlStates[4].hasValue { return true }
+        if controlStates[5].hasValue { return true }
+        if controlStates[6].hasValue { return true }
+        if controlStates[7].hasValue { return true }
+        
+        if controlStates[8].hasValue { return true }
+        if controlStates[9].hasValue { return true }
+        if controlStates[10].hasValue { return true }
+        if controlStates[11].hasValue { return true }
+        if controlStates[12].hasValue { return true }
+        if controlStates[13].hasValue { return true }
+        if controlStates[14].hasValue { return true }
+        if controlStates[15].hasValue { return true }
+        return false
+    }
+
+}
+
+public struct AllControlsState: Codable, Equatable {
+    public var values: [Int16] = [Int16].init(repeating: Int16(-1), count: 120)
+    
+    public static let empty = AllControlsState()
+    
+    public init() {}
+    
+    public var hasValue: Bool {
+        return (values.firstIndex { $0 >= 0 }) != nil
+    }
+    
+    public var controlValues: [(UInt8, Int16)] {
+        return values.enumerated().compactMap {
+            guard $0.element >= 0 else { return nil }
+            return (UInt8($0.offset), $0.element)
+        }
+    }
+}
+
 /// MidiChannelsValues
 ///
 /// A 16 generic values that can be used to store any Midi Value  per channel data.
@@ -65,6 +117,13 @@ public struct MidiChannelsValues: Codable, Equatable {
     
     public static let empty = MidiChannelsValues()
 
+    public func value(for channel: Int) -> Int16 {
+        guard channel >= 0 && channel < 16 else {
+            return 0
+        }
+        return values[Int(channel)]
+    }
+    
     public var hasAValue: Bool {
         if values[0] >= 0 { return true }
         if values[1] >= 0 { return true }

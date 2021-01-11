@@ -59,5 +59,24 @@ public extension SwiftMIDI {
             MIDIClientCreateWithBlock(name as CFString, &clientRef, block)
         }
         return clientRef
-    }    
+    }
+    
+    /// MIDIClientDispose
+    ///  Disposes a MIDIClient object.
+    ///
+    ///  - parameter client : The client to dispose.
+    ///
+    ///  It is not essential to call this function; the CoreMIDI framework will automatically
+    ///  dispose all MIDIClients when an application terminates. However, if this method is
+    ///  called to dispose the last/only MIDIClient owned by an application, the MIDI server may
+    ///  exit if there are no other MIDIClients remaining in the system, causing all subsequent calls
+    ///  to MIDIClientCreate and MIDIClientCreateWithBlock by that application to fail. For this reason,
+    ///  disposing all of an application's MIDIClients is strongly discouraged.
+    
+    @available(macOS 10.0, *)
+    static func disposeClient(_ clientRef: MIDIClientRef) throws {
+        try coreMidi {
+            MIDIClientDispose(clientRef)
+        }
+    }
 }

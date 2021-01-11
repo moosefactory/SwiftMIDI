@@ -43,7 +43,17 @@ public struct MidiEvent {
     public let value1: UInt8
     public let value2: UInt8
 
+    public let subType: MidiEventSubType
+    
     public var numberOfDataBytes: UInt8
+    
+    /// channelMode
+    ///
+    /// - returns channel mode message or nil if not a channel mode event
+    public var channelMode: ChannelModeMessage? {
+        guard type == .control else { return nil }
+        return ChannelModeMessage(rawValue: value1)
+    }
     
     // The mask to apply to data[0] to get type and channel
     static let channelMask: UInt8 = 0x0F
@@ -56,15 +66,20 @@ public struct MidiEvent {
         self.value1 = value1
         self.value2 = value2
         self.numberOfDataBytes = type.dataLength
-        self.status = (type.rawValue & 0xF0) | (channel & 0x0F)
-    }
-    
-    static func noteOn(channel: UInt8, note: UInt8, velocity: UInt8) -> MidiEvent {
-        MidiEvent(type: .noteOn, channel: channel, value1: note, value2: velocity)
-    }
-
-    static func noteOff(channel: UInt8, note: UInt8) -> MidiEvent {
-        MidiEvent(type: .noteOff, channel: channel, value1: note)
+        let status = (type.rawValue & 0xF0) | (channel & 0x0F)
+        self.status = status
+        
+        if (status >= SystemCommonMessage.midiTimeCode.rawValue) && (status <= SystemCommonMessage.endOfExclusive.rawValue) {
+            subType = .systemCommon
+            return
+        }
+        if type == .control {
+            if value1 >= ChannelModeMessage.allSoundOff.rawValue && value1 <= ChannelModeMessage.poly.rawValue {
+                subType = .channelMode
+                return
+            }
+        }
+        subType = .musical
     }
 }
 

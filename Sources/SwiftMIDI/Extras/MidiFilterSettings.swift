@@ -95,6 +95,8 @@ public class MidiFilterSettings: Codable, Equatable, CustomStringConvertible {
     
     public var willPassThrough: Bool { return !enabled || isPassThrough }
     
+    public var limitTo127Banks: Bool = true
+    
     public init(channels: MidiChannelMask = .all,
                 eventTypes: MidiEventTypeMask = .all,
                 noteRange: MidiRange = .full,
