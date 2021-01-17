@@ -283,11 +283,49 @@ public extension SwiftMIDI {
         }
     }
     
+    /// Iterates through all destinations in passed entity ref
+
+    static func forEachDestination(in entity: MIDIEntityRef, do closure: (Int, MIDIEndpointRef)->Void) throws {
+        let numberOfEndPoints = try numberOfDestinations(for: entity)
+        for index in 0..<numberOfEndPoints {
+            if let endPoint = try? SwiftMIDI.destination(for: entity, at: index) {
+                closure(index, endPoint)
+            }
+        }
+    }
+    
+    /// Iterates through all sources in passed entity ref
+
+    static func forEachSource(in entity: MIDIEntityRef, do closure: (Int, MIDIEndpointRef)->Void) throws {
+        let numberOfEndPoints = try numberOfSources(for: entity)
+        for index in 0..<numberOfEndPoints {
+            if let endPoint = try? SwiftMIDI.source(for: entity, at: index) {
+                closure(index, endPoint)
+            }
+        }
+    }
+    
     /// Returns an array containing all midi entities for passed device ref
     
     static func allEntities(in device: MIDIDeviceRef) throws -> [MIDIEntityRef] {
         var out = [MIDIEntityRef]()
         try forEachEntity(in: device) { out.append($1) }
+        return out
+    }
+    
+    /// Returns an array containing all midi destinations for passed device ref
+    
+    static func allDestinations(in entity: MIDIEntityRef) throws -> [MIDIEndpointRef] {
+        var out = [MIDIEntityRef]()
+        try forEachDestination(in: entity) { out.append($1) }
+        return out
+    }
+    
+    /// Returns an array containing all midi sources for passed entity ref
+    
+    static func allSources(in entity: MIDIEntityRef) throws -> [MIDIEndpointRef] {
+        var out = [MIDIEntityRef]()
+        try forEachSource(in: entity) { out.append($1) }
         return out
     }
 }

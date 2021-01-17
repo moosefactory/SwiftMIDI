@@ -21,6 +21,10 @@
 | 🆕 | forEachDevice | |
 | 🆕 | forEachEntity | |
 | 🆕 | allEntities | |
+| 🆕 | forEachSource(in entity: do:) | |
+| 🆕 | forEachDestination(in entity: do:) | |
+| 🆕 | allSources(in entity:) | |
+| 🆕 | allDestinations(in entity:) | |
 
 ## Devices
 
@@ -109,6 +113,8 @@ static func destination(for entity: MIDIEntityRef, at index: Int) throws -> MIDI
 ```
 ## SwiftMIDI Extras
 
+### Access devices in system
+
 #### <font color='#1EAD72'>numberOfDevices</font>
 
 Returns one of the devices in the system.
@@ -141,6 +147,8 @@ Returns an array containing all midi devices in system.
 static func allDevices() throws -> [MIDIDeviceRef]
 ```
 
+### Access sources and destinations in entities
+
 #### <font color='#1E72AD'>forEachEntity(in device:, do closure:)</font>
 
 Iterates through all entities in passed device ref.
@@ -155,4 +163,38 @@ Returns an array containing all midi entities for passed device ref.
 
 ```swift
 static func allEntities(in device: MIDIDeviceRef) throws -> [MIDIEntityRef]
+```
+
+### Access sources and destinations in entities
+
+#### <font color='#1E72AD'>forEachDestination(in entity:, do:)</font>
+
+Iterates through all sources in passed entity ref
+
+```swift
+static func forEachSource(in entity: MIDIEntityRef, do closure: (Int, MIDIEndpointRef)->Void) throws
+```
+
+#### <font color='#1E72AD'>forEachSource(in entity:, do:)</font>
+
+Iterates through all destinations in passed entity ref
+
+```swift
+static func forEachDestination(in entity: MIDIEntityRef, do closure: (Int, MIDIEndpointRef)->Void) throws
+```
+
+#### <font color='#1E72AD'>allDestinations(in entity:)</font>
+
+ Returns an array containing all midi destinations for passed entity ref
+ 
+```swift
+static func allDestinations(in entity: MIDIEntityRef) throws -> [MIDIEndpointRef]
+```
+
+#### <font color='#1E72AD'>allSources(in entity:)</font>
+
+ Returns an array containing all midi sources for passed entity ref
+ 
+```swift
+static func allSources(in entity: MIDIEntityRef) throws -> [MIDIEndpointRef]
 ```

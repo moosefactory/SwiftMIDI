@@ -116,15 +116,15 @@ extension MidiEvent: CustomStringConvertible {
             return " Clock 1/24 Note "
         }
     }
-
-    var noteParams: MidiNote {
-        return MidiNote(note: value1, velocity: value2)
-    }
 }
 
 // MARK: - Utilities
 
 public extension MidiEvent {
+
+    var noteParams: MidiNote {
+        return MidiNote(note: value1, velocity: value2)
+    }
 
     /// noteOff
     ///

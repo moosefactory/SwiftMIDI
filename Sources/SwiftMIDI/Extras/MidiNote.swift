@@ -60,7 +60,6 @@ public struct MidiNote: CustomStringConvertible, CustomDebugStringConvertible {
     func noteID(for channel: UInt) -> UInt16 {
         return UInt16(channel) << 8 + UInt16(note)
     }
-    
 }
 
 // MARK: - Note <-> Packet
