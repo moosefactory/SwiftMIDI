@@ -120,7 +120,7 @@ public extension SwiftMIDI {
     @available(macOS 10.0, *)
     static func getDataProperty(object: MIDIObjectRef, propertyID: String) throws -> Data? {
         var data: Unmanaged<CFData>?
-
+        
         try coreMidi {
             MIDIObjectGetDataProperty(object, propertyID as CFString, &data)
         }
@@ -156,7 +156,7 @@ public extension SwiftMIDI {
     @available(macOS 10.2, *)
     static func getDictionaryProperty(object: MIDIObjectRef, propertyID: String) throws -> [String: AnyObject]? {
         var dict: Unmanaged<CFDictionary>?
-
+        
         try coreMidi {
             MIDIObjectGetDictionaryProperty(object, propertyID as CFString, &dict)
         }
@@ -213,5 +213,34 @@ public extension SwiftMIDI {
         try coreMidi {
             MIDIObjectRemoveProperty(object, propertyID as CFString)
         }
+    }
+}
+
+
+extension Properties {
+    
+    static func getMidiObjects(object: MIDIObjectRef, propertyID: String) throws -> [MIDIObjectRef] {
+        guard let data = try SwiftMIDI.getDataProperty(object: object, propertyID: propertyID) else {
+            return []
+        }
+        
+        let numberOfObjects = data.count / MemoryLayout<MIDIUniqueID>.size
+//
+//
+//        let objects = [MIDIUniqueID]()
+//
+//        data.withUnsafeBytes() { bytes in
+//            let rawBuffer = UnsafeRawBufferPointer(start: bytes, count: data.count)
+//            rawBuffer.withMemoryBound(to: MIDIUniqueID.self, capacity: numberOfObjects) { bufferPointer in
+//                return [MIDIThruConnectionRef].init(unsafeUninitializedCapacity: numberOfObjects) { objectPtr, count in
+//                    count = numberOfObjects
+//                    for i in 0..<count {
+//                        objectPtr[i] = bufferPointer[i]
+//                    }
+//                }
+//            }
+//        }
+        
+        return []
     }
 }

@@ -391,7 +391,7 @@ public class MidiPacketsFilter {
             var controlNumber: UInt8 = 0
             
             for _ in 0 ..< numberOfPackets {
-                if writeIndex >= dataSize { continue }
+                if writeIndex > dataSize { continue }
                 output.timeStamp = p.timeStamp
                 withUnsafeBytes(of: p.data) { bytes in
                     for i in 0..<min(Int(p.length), 256) {

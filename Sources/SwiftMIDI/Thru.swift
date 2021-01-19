@@ -145,7 +145,7 @@ public extension SwiftMIDI {
     /// On successful return, an array of MIDIThruConnectionRef's.
     
     @available(macOS 10.2, *)
-    static func findMidiThruConnections(owner: String) throws -> [MIDIThruConnectionRef]? {
+    static func findMidiThruConnections(owner: String) throws -> [MIDIThruConnectionRef] {
         
         // 1 - allocate an unmanaged data reference
         var unmanagedData = Unmanaged.passUnretained(Data() as CFData)
@@ -159,7 +159,7 @@ public extension SwiftMIDI {
         // We prefer CFData here to access pointer and size
         let cfData = unmanagedData.takeUnretainedValue()
         guard let dataPtr = CFDataGetBytePtr(cfData) else {
-            return nil
+            return []
         }
         
         // 4  - Compute the number of elements

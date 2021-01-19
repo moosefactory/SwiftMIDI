@@ -193,7 +193,7 @@ public extension SwiftMIDI {
 
     @available(macOS 10.0, *)
     static func source(for entity: MIDIEntityRef, at index: Int) throws -> MIDIEndpointRef {
-        let source = MIDIEntityGetDestination(entity, index)
+        let source = MIDIEntityGetSource(entity, index)
         guard source != 0 else {
             throw Errors.sourceIndexOutOfRange
         }
@@ -269,6 +269,26 @@ public extension SwiftMIDI {
     static func allDevices() throws -> [MIDIDeviceRef] {
         var out = [MIDIDeviceRef]()
         try forEachDevice { out.append($1) }
+        return out
+    }
+    
+    /// Iterates through all external devices in system
+    
+    static func forEachExternalDevice(do closure: (Int, MIDIDeviceRef)->Void) throws {
+        let numberOfDevices = try getNumberOfExternalDevices()
+        for index in 0..<numberOfDevices {
+            if let device = try? SwiftMIDI.getExternalDevice(at: index) {
+                closure(index, device)
+            }
+        }
+    }
+    
+
+    /// Returns an array containing all external midi devices in system
+    
+    static func allExternalDevices() throws -> [MIDIDeviceRef] {
+        var out = [MIDIDeviceRef]()
+        try forEachExternalDevice { out.append($1) }
         return out
     }
     
