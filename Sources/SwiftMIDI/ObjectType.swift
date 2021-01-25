@@ -94,5 +94,10 @@ public extension SwiftMIDI {
                 return "External Destination"
             }
         }
+        
+        public var isSource: Bool { return self == .source || self == .externalSource }
+        public var isDestination: Bool { return self == .destination || self == .externalDestination }
+        public var isDevice: Bool { return self == .device || self == .externalDevice }
+        public var isEntity: Bool { return self == .entity || self == .externalEntity }
     }
 }
