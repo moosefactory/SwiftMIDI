@@ -219,12 +219,12 @@ public extension SwiftMIDI {
 
 extension Properties {
     
-    static func getMidiObjects(object: MIDIObjectRef, propertyID: String) throws -> [MIDIObjectRef] {
-        guard let data = try SwiftMIDI.getDataProperty(object: object, propertyID: propertyID) else {
-            return []
-        }
-        
-        let numberOfObjects = data.count / MemoryLayout<MIDIUniqueID>.size
+//    static func getMidiObjects(object: MIDIObjectRef, propertyID: String) throws -> [MIDIObjectRef] {
+//        guard let data = try SwiftMIDI.getDataProperty(object: object, propertyID: propertyID) else {
+//            return []
+//        }
+//        
+//        let numberOfObjects = data.count / MemoryLayout<MIDIUniqueID>.size
 //
 //
 //        let objects = [MIDIUniqueID]()
@@ -240,7 +240,7 @@ extension Properties {
 //                }
 //            }
 //        }
-        
-        return []
-    }
+//        
+//        return []
+//    }
 }

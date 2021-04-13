@@ -43,6 +43,11 @@ public struct MidiChannelsMap: Codable, Equatable {
     public static let identity = MidiChannelsMap()
     
     public init() {}
+    
+    /// Create a channel map that redirects all input channels to unique output channel
+    public init(channel: UInt8) {
+        channels = [UInt8](repeating: channel, count: 16)
+    }
 }
 
 /// MidiChannelsTranspose

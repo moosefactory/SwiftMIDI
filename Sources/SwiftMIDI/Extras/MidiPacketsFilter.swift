@@ -37,6 +37,10 @@ public class MidiPacketsFilter {
     
     public var filterState: FilterState
     
+    public var eventsTap: ((MidiEvent)->Void)?
+    
+    public var midiInputBufferTap: ((MidiInputBuffer)->Void)?
+
     public init(settings: MidiFilterSettings) {
         self.settings = settings
         self.filterState = FilterState()
@@ -355,6 +359,8 @@ public class MidiPacketsFilter {
         
         let output = Output(packets: outPackets)
         
+        
+        let midiInputBuffer: MidiInputBuffer? = midiInputBufferTap == nil ? nil : MidiInputBuffer()
         let targetBytes = [UInt8].init(unsafeUninitializedCapacity: Int(dataSize)) { (targetBytes, count) in
             count = Int(dataSize)
             
@@ -571,6 +577,15 @@ public class MidiPacketsFilter {
                                         writeIndex += 1
                                         targetBytes[writeIndex] = byte
                                         writeIndex += 1
+                                        
+                                        if let tap = eventsTap {
+                                            tap(MidiEvent(type: .noteOn, timestamp: p.timeStamp,
+                                                          channel: settings.channelsMap.channels[Int(channel)] & 0x0F,
+                                                          value1: data1, value2: byte))
+                                        }
+                                        if let mib = midiInputBuffer {
+                                            mib.addNoteOn(pitch: data1, velocity: byte)
+                                        }
                                         // -------------
                                         
                                     } else {
@@ -625,6 +640,15 @@ public class MidiPacketsFilter {
                                 writeIndex += 1
                                 // -------------
                                 
+                                if let tap = eventsTap {
+                                    tap(MidiEvent(type: .noteOff, timestamp: p.timeStamp,
+                                                  channel: settings.channelsMap.channels[Int(channel)] & 0x0F,
+                                                  value1: data1, value2: byte))
+                                }
+                                if let mib = midiInputBuffer {
+                                    mib.addNoteOff(pitch: data1, velocity: byte)
+                                }
+
                                 byteSelector = false
                             } else {
                                 data1 = byte
@@ -751,6 +775,10 @@ public class MidiPacketsFilter {
 
                 // Go to next packet ( should never happen for musical events )
                 p = MIDIPacketNext(&p).pointee
+            }
+            
+            if let mib = midiInputBuffer, let tap = midiInputBufferTap {
+                tap(mib)
             }
         }
         

@@ -70,7 +70,7 @@ public class MidiFilterSettings: Codable, Equatable, CustomStringConvertible {
     public var tracksHigherAndLowerNotes: Bool = true {
         didSet { updateIsThrough() }
     }
-    
+        
     // MARK: - Inline operations
     
     /// Channels Mapper

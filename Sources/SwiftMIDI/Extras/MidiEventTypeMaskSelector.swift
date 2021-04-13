@@ -35,7 +35,7 @@ import Foundation
 ///
 /// Predefined event type masks. Nice to have to make mask presets popup menus
 
-public enum MidiEventTypeMaskSelector: Int, Codable, CaseIterable {
+public enum MidiEventTypeMaskSelector: String, Codable, CaseIterable {
     
     case notes
     case pitchBend
@@ -53,25 +53,25 @@ public enum MidiEventTypeMaskSelector: Int, Codable, CaseIterable {
         case .controls:
             return "controls"
         case .afterTouch:
-            return "aftertouch"
+            return "afterTouch"
         case .programChange:
             return "programChange"
         case .clock:
             return "clock"
         }
     }
-
+    
     public init(with identifier: String) {
         switch identifier {
-            case "notes":
-                self = .notes
+        case "notes":
+            self = .notes
         case "pitchBend":
             self = .pitchBend
         case "controls":
             self = .controls
         case "afterTouch":
             self = .afterTouch
-        case " programChange":
+        case "programChange":
             self = .programChange
         case "clock":
             self = .clock
@@ -87,7 +87,7 @@ public enum MidiEventTypeMaskSelector: Int, Codable, CaseIterable {
         case .notes:
             return .note
         case .pitchBend:
-            return .afterTouch
+            return .pitchBend
         case .controls:
             return .control
         case .afterTouch:

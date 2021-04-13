@@ -24,50 +24,47 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
-
-//  MidiChannelMask.swift
-//  Created by Tristan Leblanc on 08/01/2021.
+//
+// MidiInputBuffer
+// Created by Tristan Leblanc on 27/02/2021.
 
 import Foundation
+import CoreMIDI
 
-/// MidiChannelMask
-///
-/// A mask used to filter channel
-/// Each bit represent a channel
+public class MidiInputBuffer: CustomStringConvertible {
+    public var noteOffBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var numNoteOffs = 0
+    public var noteOnBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var numNoteOns = 0
+    public var count = 0
 
-public typealias MidiChannelMask = UInt16
+    public var time: UInt64 = 0
+    public var offset: Int32 = 0
 
-/// Channel Mask <-> Channels conversion
-extension MidiChannelMask {
-    
-    /// Returns the active channels
-    public var channels: [UInt8] {
-        var out = [UInt8]()
-        for i: UInt8 in 0...15 {
-            if (self & (0x0001 << i)) > 0 {
-                out.append(i)
-            }
-        }
-        return out
+    public func clear(at time: UInt64, stepOffset: Int32) {
+        self.time = time
+        self.offset = stepOffset
+        numNoteOffs = 0
+        numNoteOns = 0
     }
     
-    /// Init with active channels
-    public init(channels: [UInt8]) {
-        self = 0
-        channels.forEach {
-            if $0 < 16 {
-                self |= (0x0001 << $0)
-            }
-        }
+    public func addNoteOn(pitch: UInt8, velocity: UInt8) {
+        noteOnBuffer[numNoteOns] = (UInt16(pitch) << 8) | UInt16(velocity)
+        numNoteOns += 1
     }
     
-    /// Init with one channel
-    public init(channel: UInt8) {
-        self = 0x0001 << channel
+    public func addNoteOff(pitch: UInt8, velocity: UInt8) {
+        noteOffBuffer[numNoteOffs] = (UInt16(pitch) << 8) | UInt16(velocity)
+        numNoteOffs += 1
     }
-    
-    public static let all: MidiChannelMask = 0xFFFF
-    public static let none: MidiChannelMask = 0x0000
-    public static let channel1: MidiChannelMask = 0x0001
+
+    public var description: String {
+        var onStr = "0x"
+        for i in 0..<numNoteOns { onStr += String(noteOnBuffer[i], radix: 16, uppercase: true) }
+
+        var offStr = "0x"
+        for i in 0..<numNoteOffs { offStr += String(noteOffBuffer[i], radix: 16, uppercase: true) }
+
+        return "BUFFER : t = \(time) - offset = \(offset)\r    ON \(onStr)\r    OFF : \(offStr)"
+    }
 }
-

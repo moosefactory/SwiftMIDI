@@ -54,3 +54,21 @@ public let SwiftMIDINotes: [String] = {
     }
     return notes
 }()
+
+/// An array containing all notes as strings ["C0", "C#0", "D0", ...]
+public let SwiftMIDIPlainNotes: [String] = {
+    var noteLetters = ["C", "D", "E", "F", "G", "A", "B"]
+    var notes = [String]()
+    var octave = 0
+    var n = 0
+    for value in 0...255 {
+        let note = noteLetters[n]
+        notes.append("\(note)\(octave)")
+        n += 1
+        if n == 7 {
+            n = 0
+            octave += 1
+        }
+    }
+    return notes
+}()
