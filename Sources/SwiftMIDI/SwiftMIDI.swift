@@ -44,8 +44,9 @@ public extension Notification.Name {
 /// A swifty layer over the CoreMIDI framework
 
 public struct SwiftMIDI {
-        
-    /// restart
+    
+    /// restart ( MIDIRestart )
+    ///
     /// Stops and restarts MIDI I/O.
     ///
     /// This is useful for forcing CoreMIDI to ask its drivers to rescan for hardware.
@@ -55,6 +56,30 @@ public struct SwiftMIDI {
         try coreMidi {
             MIDIRestart()
         }
+    }
+    
+    /// findByUniqueID ( MIDIObjectFindByUniqueID )
+    ///
+    /// Locates a device, external device, entity, or endpoint by its uniqueID.
+    ///
+    /// - parameter: inUniqueID
+    /// The uniqueID of the object to search for.  (This should
+    /// be the result of an earlier call to MIDIObjectGetIntegerProperty
+    /// for the property kMIDIPropertyUniqueID).
+    ///
+    /// - result: A (MIDIObjectRef, MIDIObjectType) tuple
+    ///   - MIDIObjectRef: This should be cast to the appropriate type (MIDIDeviceRef, MIDIEntityRef, MIDIEndpointRef),
+    /// according to MIDIObjectType.
+    ///   - MIDIObjectType: On exit, the type of object which was found; undefined if none found.
+    
+    @available(macOS 10.2, *)
+    public static func findByUniqueID(_ id: Int) throws -> (ref: MIDIObjectRef, type: MIDIObjectType) {
+        var objectRef = MIDIObjectRef()
+        var objectType = MIDIObjectType.destination
+        try coreMidi {
+            MIDIObjectFindByUniqueID(Int32(id), &objectRef, &objectType)
+        }
+        return (ref: objectRef, type: objectType)
     }
 }
 
@@ -80,3 +105,4 @@ public func coreMidi(_ block: ()->OSStatus) throws {
     let err = block()
     try throwMidiErrorIfNeeded(err)
 }
+

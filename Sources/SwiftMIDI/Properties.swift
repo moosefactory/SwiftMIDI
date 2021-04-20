@@ -217,30 +217,25 @@ public extension SwiftMIDI {
 }
 
 
-extension Properties {
+extension SwiftMIDI {
     
-//    static func getMidiObjects(object: MIDIObjectRef, propertyID: String) throws -> [MIDIObjectRef] {
-//        guard let data = try SwiftMIDI.getDataProperty(object: object, propertyID: propertyID) else {
-//            return []
-//        }
-//        
-//        let numberOfObjects = data.count / MemoryLayout<MIDIUniqueID>.size
-//
-//
-//        let objects = [MIDIUniqueID]()
-//
-//        data.withUnsafeBytes() { bytes in
-//            let rawBuffer = UnsafeRawBufferPointer(start: bytes, count: data.count)
-//            rawBuffer.withMemoryBound(to: MIDIUniqueID.self, capacity: numberOfObjects) { bufferPointer in
-//                return [MIDIThruConnectionRef].init(unsafeUninitializedCapacity: numberOfObjects) { objectPtr, count in
-//                    count = numberOfObjects
-//                    for i in 0..<count {
-//                        objectPtr[i] = bufferPointer[i]
-//                    }
-//                }
-//            }
-//        }
-//        
-//        return []
-//    }
+    public static func getMidiObjects(object: MIDIObjectRef, propertyID: String) throws -> [MIDIObjectRef] {
+        guard let data = try SwiftMIDI.getDataProperty(object: object, propertyID: propertyID) else {
+            return []
+        }
+        
+        let numberOfConnections: Int = data.count / MemoryLayout<MIDIObjectRef>.size
+        var out = data.withUnsafeBytes { (bytes) -> [MIDIObjectRef] in
+            
+            let int32Pointer = bytes.bindMemory(to: MIDIObjectRef.self)
+            
+            return [MIDIObjectRef].init(unsafeUninitializedCapacity: numberOfConnections) { refPtr, count in
+                count = numberOfConnections
+                for i in 0..<count {
+                    refPtr[i] = int32Pointer[i]
+                }
+            }
+        }
+        return out
+    }
 }

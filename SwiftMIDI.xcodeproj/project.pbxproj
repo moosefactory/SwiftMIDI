@@ -10,34 +10,34 @@
 		BC59321F2625F0FA00056C59 /* SwiftMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC5932152625F0FA00056C59 /* SwiftMIDI.framework */; };
 		BC5932242625F0FA00056C59 /* SwiftMIDITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932232625F0FA00056C59 /* SwiftMIDITests.swift */; };
 		BC5932262625F0FA00056C59 /* SwiftMIDI.h in Headers */ = {isa = PBXBuildFile; fileRef = BC5932182625F0FA00056C59 /* SwiftMIDI.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BC5932502625F10800056C59 /* SwiftMIDI.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932332625F10800056C59 /* SwiftMIDI.swift */; };
-		BC5932512625F10800056C59 /* NotificationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932342625F10800056C59 /* NotificationMessage.swift */; };
-		BC5932522625F10800056C59 /* Properties.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932352625F10800056C59 /* Properties.swift */; };
-		BC5932532625F10800056C59 /* Port.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932362625F10800056C59 /* Port.swift */; };
-		BC5932542625F10800056C59 /* Send.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932372625F10800056C59 /* Send.swift */; };
-		BC5932552625F10800056C59 /* Thru.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932382625F10800056C59 /* Thru.swift */; };
-		BC5932562625F10800056C59 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932392625F10800056C59 /* Notifications.swift */; };
-		BC5932572625F10800056C59 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59323A2625F10800056C59 /* Client.swift */; };
-		BC5932582625F10800056C59 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59323B2625F10800056C59 /* Device.swift */; };
-		BC5932592625F10800056C59 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59323C2625F10800056C59 /* Errors.swift */; };
-		BC59325A2625F10800056C59 /* ObjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59323D2625F10800056C59 /* ObjectType.swift */; };
-		BC59325B2625F10800056C59 /* EndPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59323E2625F10800056C59 /* EndPoint.swift */; };
-		BC59325C2625F10800056C59 /* MidiEventTypeMaskSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932402625F10800056C59 /* MidiEventTypeMaskSelector.swift */; };
-		BC59325D2625F10800056C59 /* MidiChannelMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932412625F10800056C59 /* MidiChannelMask.swift */; };
-		BC59325E2625F10800056C59 /* MidiFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932422625F10800056C59 /* MidiFilterSettings.swift */; };
-		BC59325F2625F10800056C59 /* Notes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932432625F10800056C59 /* Notes.swift */; };
-		BC5932602625F10800056C59 /* MidiEventsEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932442625F10800056C59 /* MidiEventsEncoder.swift */; };
-		BC5932612625F10800056C59 /* ClockSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932452625F10800056C59 /* ClockSignal.swift */; };
-		BC5932622625F10800056C59 /* MidiEventsDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932462625F10800056C59 /* MidiEventsDecoder.swift */; };
-		BC5932632625F10800056C59 /* MidiPacketsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932472625F10800056C59 /* MidiPacketsFilter.swift */; };
-		BC5932642625F10800056C59 /* MidiNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932482625F10800056C59 /* MidiNote.swift */; };
-		BC5932652625F10800056C59 /* MidiEventFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5932492625F10800056C59 /* MidiEventFactory.swift */; };
-		BC5932662625F10800056C59 /* MidiInputBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324A2625F10800056C59 /* MidiInputBuffer.swift */; };
-		BC5932672625F10800056C59 /* MidiEventType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324B2625F10800056C59 /* MidiEventType.swift */; };
-		BC5932682625F10800056C59 /* MidiEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324C2625F10800056C59 /* MidiEvent.swift */; };
-		BC5932692625F10800056C59 /* MidiObjectProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324D2625F10800056C59 /* MidiObjectProperties.swift */; };
-		BC59326A2625F10800056C59 /* MidiChannel+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324E2625F10800056C59 /* MidiChannel+Utils.swift */; };
-		BC59326B2625F10800056C59 /* MidiRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC59324F2625F10800056C59 /* MidiRange.swift */; };
+		BC6433A7262EF2320010BA32 /* SwiftMIDI.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338A262EF2320010BA32 /* SwiftMIDI.swift */; };
+		BC6433A8262EF2320010BA32 /* NotificationMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338B262EF2320010BA32 /* NotificationMessage.swift */; };
+		BC6433A9262EF2320010BA32 /* Properties.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338C262EF2320010BA32 /* Properties.swift */; };
+		BC6433AA262EF2320010BA32 /* Port.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338D262EF2320010BA32 /* Port.swift */; };
+		BC6433AB262EF2320010BA32 /* Send.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338E262EF2320010BA32 /* Send.swift */; };
+		BC6433AC262EF2320010BA32 /* Thru.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64338F262EF2320010BA32 /* Thru.swift */; };
+		BC6433AD262EF2320010BA32 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643390262EF2320010BA32 /* Notifications.swift */; };
+		BC6433AE262EF2320010BA32 /* Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643391262EF2320010BA32 /* Client.swift */; };
+		BC6433AF262EF2320010BA32 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643392262EF2320010BA32 /* Device.swift */; };
+		BC6433B0262EF2320010BA32 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643393262EF2320010BA32 /* Errors.swift */; };
+		BC6433B1262EF2320010BA32 /* ObjectType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643394262EF2320010BA32 /* ObjectType.swift */; };
+		BC6433B2262EF2320010BA32 /* EndPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643395262EF2320010BA32 /* EndPoint.swift */; };
+		BC6433B3262EF2320010BA32 /* MidiEventTypeMaskSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643397262EF2320010BA32 /* MidiEventTypeMaskSelector.swift */; };
+		BC6433B4262EF2320010BA32 /* MidiChannelMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643398262EF2320010BA32 /* MidiChannelMask.swift */; };
+		BC6433B5262EF2320010BA32 /* MidiFilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC643399262EF2320010BA32 /* MidiFilterSettings.swift */; };
+		BC6433B6262EF2320010BA32 /* Notes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339A262EF2320010BA32 /* Notes.swift */; };
+		BC6433B7262EF2320010BA32 /* MidiEventsEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339B262EF2320010BA32 /* MidiEventsEncoder.swift */; };
+		BC6433B8262EF2320010BA32 /* ClockSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339C262EF2320010BA32 /* ClockSignal.swift */; };
+		BC6433B9262EF2320010BA32 /* MidiEventsDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339D262EF2320010BA32 /* MidiEventsDecoder.swift */; };
+		BC6433BA262EF2320010BA32 /* MidiPacketsFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339E262EF2320010BA32 /* MidiPacketsFilter.swift */; };
+		BC6433BB262EF2320010BA32 /* MidiNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64339F262EF2320010BA32 /* MidiNote.swift */; };
+		BC6433BC262EF2320010BA32 /* MidiEventFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A0262EF2320010BA32 /* MidiEventFactory.swift */; };
+		BC6433BD262EF2320010BA32 /* MidiInputBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A1262EF2320010BA32 /* MidiInputBuffer.swift */; };
+		BC6433BE262EF2320010BA32 /* MidiEventType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A2262EF2320010BA32 /* MidiEventType.swift */; };
+		BC6433BF262EF2320010BA32 /* MidiEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A3262EF2320010BA32 /* MidiEvent.swift */; };
+		BC6433C0262EF2320010BA32 /* MidiObjectProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A4262EF2320010BA32 /* MidiObjectProperties.swift */; };
+		BC6433C1262EF2320010BA32 /* MidiChannel+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A5262EF2320010BA32 /* MidiChannel+Utils.swift */; };
+		BC6433C2262EF2320010BA32 /* MidiRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6433A6262EF2320010BA32 /* MidiRange.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,36 +57,42 @@
 		BC59321E2625F0FA00056C59 /* SwiftMIDITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftMIDITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC5932232625F0FA00056C59 /* SwiftMIDITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftMIDITests.swift; sourceTree = "<group>"; };
 		BC5932252625F0FA00056C59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		BC5932332625F10800056C59 /* SwiftMIDI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftMIDI.swift; sourceTree = "<group>"; };
-		BC5932342625F10800056C59 /* NotificationMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationMessage.swift; sourceTree = "<group>"; };
-		BC5932352625F10800056C59 /* Properties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Properties.swift; sourceTree = "<group>"; };
-		BC5932362625F10800056C59 /* Port.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Port.swift; sourceTree = "<group>"; };
-		BC5932372625F10800056C59 /* Send.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Send.swift; sourceTree = "<group>"; };
-		BC5932382625F10800056C59 /* Thru.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Thru.swift; sourceTree = "<group>"; };
-		BC5932392625F10800056C59 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
-		BC59323A2625F10800056C59 /* Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
-		BC59323B2625F10800056C59 /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
-		BC59323C2625F10800056C59 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
-		BC59323D2625F10800056C59 /* ObjectType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectType.swift; sourceTree = "<group>"; };
-		BC59323E2625F10800056C59 /* EndPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndPoint.swift; sourceTree = "<group>"; };
-		BC5932402625F10800056C59 /* MidiEventTypeMaskSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventTypeMaskSelector.swift; sourceTree = "<group>"; };
-		BC5932412625F10800056C59 /* MidiChannelMask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiChannelMask.swift; sourceTree = "<group>"; };
-		BC5932422625F10800056C59 /* MidiFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiFilterSettings.swift; sourceTree = "<group>"; };
-		BC5932432625F10800056C59 /* Notes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notes.swift; sourceTree = "<group>"; };
-		BC5932442625F10800056C59 /* MidiEventsEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventsEncoder.swift; sourceTree = "<group>"; };
-		BC5932452625F10800056C59 /* ClockSignal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockSignal.swift; sourceTree = "<group>"; };
-		BC5932462625F10800056C59 /* MidiEventsDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventsDecoder.swift; sourceTree = "<group>"; };
-		BC5932472625F10800056C59 /* MidiPacketsFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiPacketsFilter.swift; sourceTree = "<group>"; };
-		BC5932482625F10800056C59 /* MidiNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiNote.swift; sourceTree = "<group>"; };
-		BC5932492625F10800056C59 /* MidiEventFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventFactory.swift; sourceTree = "<group>"; };
-		BC59324A2625F10800056C59 /* MidiInputBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiInputBuffer.swift; sourceTree = "<group>"; };
-		BC59324B2625F10800056C59 /* MidiEventType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventType.swift; sourceTree = "<group>"; };
-		BC59324C2625F10800056C59 /* MidiEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEvent.swift; sourceTree = "<group>"; };
-		BC59324D2625F10800056C59 /* MidiObjectProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiObjectProperties.swift; sourceTree = "<group>"; };
-		BC59324E2625F10800056C59 /* MidiChannel+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MidiChannel+Utils.swift"; sourceTree = "<group>"; };
-		BC59324F2625F10800056C59 /* MidiRange.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiRange.swift; sourceTree = "<group>"; };
-		BC5932702625F11700056C59 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		BC5932712625F12300056C59 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../Package.swift; sourceTree = "<group>"; };
+		BC643362262EF20A0010BA32 /* DevicesAndEntities.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DevicesAndEntities.md; sourceTree = "<group>"; };
+		BC643363262EF20A0010BA32 /* Endpoints.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Endpoints.md; sourceTree = "<group>"; };
+		BC643364262EF20A0010BA32 /* Port.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Port.md; sourceTree = "<group>"; };
+		BC643365262EF20A0010BA32 /* SwiftMIDI_ReadMe_Scheme.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SwiftMIDI_ReadMe_Scheme.jpg; sourceTree = "<group>"; };
+		BC643366262EF20A0010BA32 /* Client.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Client.md; sourceTree = "<group>"; };
+		BC643367262EF20B0010BA32 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		BC643368262EF20B0010BA32 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		BC64338A262EF2320010BA32 /* SwiftMIDI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftMIDI.swift; sourceTree = "<group>"; };
+		BC64338B262EF2320010BA32 /* NotificationMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NotificationMessage.swift; sourceTree = "<group>"; };
+		BC64338C262EF2320010BA32 /* Properties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Properties.swift; sourceTree = "<group>"; };
+		BC64338D262EF2320010BA32 /* Port.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Port.swift; sourceTree = "<group>"; };
+		BC64338E262EF2320010BA32 /* Send.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Send.swift; sourceTree = "<group>"; };
+		BC64338F262EF2320010BA32 /* Thru.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Thru.swift; sourceTree = "<group>"; };
+		BC643390262EF2320010BA32 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		BC643391262EF2320010BA32 /* Client.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Client.swift; sourceTree = "<group>"; };
+		BC643392262EF2320010BA32 /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		BC643393262EF2320010BA32 /* Errors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Errors.swift; sourceTree = "<group>"; };
+		BC643394262EF2320010BA32 /* ObjectType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectType.swift; sourceTree = "<group>"; };
+		BC643395262EF2320010BA32 /* EndPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndPoint.swift; sourceTree = "<group>"; };
+		BC643397262EF2320010BA32 /* MidiEventTypeMaskSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventTypeMaskSelector.swift; sourceTree = "<group>"; };
+		BC643398262EF2320010BA32 /* MidiChannelMask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiChannelMask.swift; sourceTree = "<group>"; };
+		BC643399262EF2320010BA32 /* MidiFilterSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiFilterSettings.swift; sourceTree = "<group>"; };
+		BC64339A262EF2320010BA32 /* Notes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notes.swift; sourceTree = "<group>"; };
+		BC64339B262EF2320010BA32 /* MidiEventsEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventsEncoder.swift; sourceTree = "<group>"; };
+		BC64339C262EF2320010BA32 /* ClockSignal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClockSignal.swift; sourceTree = "<group>"; };
+		BC64339D262EF2320010BA32 /* MidiEventsDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventsDecoder.swift; sourceTree = "<group>"; };
+		BC64339E262EF2320010BA32 /* MidiPacketsFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiPacketsFilter.swift; sourceTree = "<group>"; };
+		BC64339F262EF2320010BA32 /* MidiNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiNote.swift; sourceTree = "<group>"; };
+		BC6433A0262EF2320010BA32 /* MidiEventFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventFactory.swift; sourceTree = "<group>"; };
+		BC6433A1262EF2320010BA32 /* MidiInputBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiInputBuffer.swift; sourceTree = "<group>"; };
+		BC6433A2262EF2320010BA32 /* MidiEventType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEventType.swift; sourceTree = "<group>"; };
+		BC6433A3262EF2320010BA32 /* MidiEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiEvent.swift; sourceTree = "<group>"; };
+		BC6433A4262EF2320010BA32 /* MidiObjectProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiObjectProperties.swift; sourceTree = "<group>"; };
+		BC6433A5262EF2320010BA32 /* MidiChannel+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MidiChannel+Utils.swift"; sourceTree = "<group>"; };
+		BC6433A6262EF2320010BA32 /* MidiRange.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MidiRange.swift; sourceTree = "<group>"; };
+		BC6433C7262EF32E0010BA32 /* SwiftMIDI.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = SwiftMIDI.podspec; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,8 +117,11 @@
 		BC59320B2625F0FA00056C59 = {
 			isa = PBXGroup;
 			children = (
-				BC5932702625F11700056C59 /* README.md */,
-				BC5932712625F12300056C59 /* Package.swift */,
+				BC643367262EF20B0010BA32 /* README.md */,
+				BC643361262EF20A0010BA32 /* Documentation */,
+				BC643368262EF20B0010BA32 /* Package.swift */,
+				BC6433C7262EF32E0010BA32 /* SwiftMIDI.podspec */,
+				BC643388262EF2320010BA32 /* Sources */,
 				BC5932172625F0FA00056C59 /* SwiftMIDI */,
 				BC5932222625F0FA00056C59 /* SwiftMIDITests */,
 				BC5932162625F0FA00056C59 /* Products */,
@@ -133,7 +142,6 @@
 			children = (
 				BC5932182625F0FA00056C59 /* SwiftMIDI.h */,
 				BC5932192625F0FA00056C59 /* Info.plist */,
-				BC5932312625F10800056C59 /* Sources */,
 			);
 			path = SwiftMIDI;
 			sourceTree = "<group>";
@@ -147,54 +155,65 @@
 			path = SwiftMIDITests;
 			sourceTree = "<group>";
 		};
-		BC5932312625F10800056C59 /* Sources */ = {
+		BC643361262EF20A0010BA32 /* Documentation */ = {
 			isa = PBXGroup;
 			children = (
-				BC5932322625F10800056C59 /* SwiftMIDI */,
+				BC643362262EF20A0010BA32 /* DevicesAndEntities.md */,
+				BC643363262EF20A0010BA32 /* Endpoints.md */,
+				BC643364262EF20A0010BA32 /* Port.md */,
+				BC643365262EF20A0010BA32 /* SwiftMIDI_ReadMe_Scheme.jpg */,
+				BC643366262EF20A0010BA32 /* Client.md */,
 			);
-			name = Sources;
-			path = ../../Sources;
+			path = Documentation;
 			sourceTree = "<group>";
 		};
-		BC5932322625F10800056C59 /* SwiftMIDI */ = {
+		BC643388262EF2320010BA32 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				BC5932332625F10800056C59 /* SwiftMIDI.swift */,
-				BC5932342625F10800056C59 /* NotificationMessage.swift */,
-				BC5932352625F10800056C59 /* Properties.swift */,
-				BC5932362625F10800056C59 /* Port.swift */,
-				BC5932372625F10800056C59 /* Send.swift */,
-				BC5932382625F10800056C59 /* Thru.swift */,
-				BC5932392625F10800056C59 /* Notifications.swift */,
-				BC59323A2625F10800056C59 /* Client.swift */,
-				BC59323B2625F10800056C59 /* Device.swift */,
-				BC59323C2625F10800056C59 /* Errors.swift */,
-				BC59323D2625F10800056C59 /* ObjectType.swift */,
-				BC59323E2625F10800056C59 /* EndPoint.swift */,
-				BC59323F2625F10800056C59 /* Extras */,
+				BC643389262EF2320010BA32 /* SwiftMIDI */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		BC643389262EF2320010BA32 /* SwiftMIDI */ = {
+			isa = PBXGroup;
+			children = (
+				BC64338A262EF2320010BA32 /* SwiftMIDI.swift */,
+				BC64338B262EF2320010BA32 /* NotificationMessage.swift */,
+				BC64338C262EF2320010BA32 /* Properties.swift */,
+				BC64338D262EF2320010BA32 /* Port.swift */,
+				BC64338E262EF2320010BA32 /* Send.swift */,
+				BC64338F262EF2320010BA32 /* Thru.swift */,
+				BC643390262EF2320010BA32 /* Notifications.swift */,
+				BC643391262EF2320010BA32 /* Client.swift */,
+				BC643392262EF2320010BA32 /* Device.swift */,
+				BC643393262EF2320010BA32 /* Errors.swift */,
+				BC643394262EF2320010BA32 /* ObjectType.swift */,
+				BC643395262EF2320010BA32 /* EndPoint.swift */,
+				BC643396262EF2320010BA32 /* Extras */,
 			);
 			path = SwiftMIDI;
 			sourceTree = "<group>";
 		};
-		BC59323F2625F10800056C59 /* Extras */ = {
+		BC643396262EF2320010BA32 /* Extras */ = {
 			isa = PBXGroup;
 			children = (
-				BC5932402625F10800056C59 /* MidiEventTypeMaskSelector.swift */,
-				BC5932412625F10800056C59 /* MidiChannelMask.swift */,
-				BC5932422625F10800056C59 /* MidiFilterSettings.swift */,
-				BC5932432625F10800056C59 /* Notes.swift */,
-				BC5932442625F10800056C59 /* MidiEventsEncoder.swift */,
-				BC5932452625F10800056C59 /* ClockSignal.swift */,
-				BC5932462625F10800056C59 /* MidiEventsDecoder.swift */,
-				BC5932472625F10800056C59 /* MidiPacketsFilter.swift */,
-				BC5932482625F10800056C59 /* MidiNote.swift */,
-				BC5932492625F10800056C59 /* MidiEventFactory.swift */,
-				BC59324A2625F10800056C59 /* MidiInputBuffer.swift */,
-				BC59324B2625F10800056C59 /* MidiEventType.swift */,
-				BC59324C2625F10800056C59 /* MidiEvent.swift */,
-				BC59324D2625F10800056C59 /* MidiObjectProperties.swift */,
-				BC59324E2625F10800056C59 /* MidiChannel+Utils.swift */,
-				BC59324F2625F10800056C59 /* MidiRange.swift */,
+				BC643397262EF2320010BA32 /* MidiEventTypeMaskSelector.swift */,
+				BC643398262EF2320010BA32 /* MidiChannelMask.swift */,
+				BC643399262EF2320010BA32 /* MidiFilterSettings.swift */,
+				BC64339A262EF2320010BA32 /* Notes.swift */,
+				BC64339B262EF2320010BA32 /* MidiEventsEncoder.swift */,
+				BC64339C262EF2320010BA32 /* ClockSignal.swift */,
+				BC64339D262EF2320010BA32 /* MidiEventsDecoder.swift */,
+				BC64339E262EF2320010BA32 /* MidiPacketsFilter.swift */,
+				BC64339F262EF2320010BA32 /* MidiNote.swift */,
+				BC6433A0262EF2320010BA32 /* MidiEventFactory.swift */,
+				BC6433A1262EF2320010BA32 /* MidiInputBuffer.swift */,
+				BC6433A2262EF2320010BA32 /* MidiEventType.swift */,
+				BC6433A3262EF2320010BA32 /* MidiEvent.swift */,
+				BC6433A4262EF2320010BA32 /* MidiObjectProperties.swift */,
+				BC6433A5262EF2320010BA32 /* MidiChannel+Utils.swift */,
+				BC6433A6262EF2320010BA32 /* MidiRange.swift */,
 			);
 			path = Extras;
 			sourceTree = "<group>";
@@ -307,34 +326,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC5932522625F10800056C59 /* Properties.swift in Sources */,
-				BC59325A2625F10800056C59 /* ObjectType.swift in Sources */,
-				BC5932652625F10800056C59 /* MidiEventFactory.swift in Sources */,
-				BC5932612625F10800056C59 /* ClockSignal.swift in Sources */,
-				BC5932662625F10800056C59 /* MidiInputBuffer.swift in Sources */,
-				BC59325D2625F10800056C59 /* MidiChannelMask.swift in Sources */,
-				BC5932562625F10800056C59 /* Notifications.swift in Sources */,
-				BC5932512625F10800056C59 /* NotificationMessage.swift in Sources */,
-				BC59325E2625F10800056C59 /* MidiFilterSettings.swift in Sources */,
-				BC59326A2625F10800056C59 /* MidiChannel+Utils.swift in Sources */,
-				BC5932582625F10800056C59 /* Device.swift in Sources */,
-				BC5932692625F10800056C59 /* MidiObjectProperties.swift in Sources */,
-				BC5932542625F10800056C59 /* Send.swift in Sources */,
-				BC5932642625F10800056C59 /* MidiNote.swift in Sources */,
-				BC5932602625F10800056C59 /* MidiEventsEncoder.swift in Sources */,
-				BC5932672625F10800056C59 /* MidiEventType.swift in Sources */,
-				BC5932682625F10800056C59 /* MidiEvent.swift in Sources */,
-				BC59325B2625F10800056C59 /* EndPoint.swift in Sources */,
-				BC5932532625F10800056C59 /* Port.swift in Sources */,
-				BC5932592625F10800056C59 /* Errors.swift in Sources */,
-				BC5932552625F10800056C59 /* Thru.swift in Sources */,
-				BC59325C2625F10800056C59 /* MidiEventTypeMaskSelector.swift in Sources */,
-				BC59326B2625F10800056C59 /* MidiRange.swift in Sources */,
-				BC5932572625F10800056C59 /* Client.swift in Sources */,
-				BC5932502625F10800056C59 /* SwiftMIDI.swift in Sources */,
-				BC59325F2625F10800056C59 /* Notes.swift in Sources */,
-				BC5932632625F10800056C59 /* MidiPacketsFilter.swift in Sources */,
-				BC5932622625F10800056C59 /* MidiEventsDecoder.swift in Sources */,
+				BC6433A9262EF2320010BA32 /* Properties.swift in Sources */,
+				BC6433B1262EF2320010BA32 /* ObjectType.swift in Sources */,
+				BC6433BC262EF2320010BA32 /* MidiEventFactory.swift in Sources */,
+				BC6433B8262EF2320010BA32 /* ClockSignal.swift in Sources */,
+				BC6433BD262EF2320010BA32 /* MidiInputBuffer.swift in Sources */,
+				BC6433B4262EF2320010BA32 /* MidiChannelMask.swift in Sources */,
+				BC6433AD262EF2320010BA32 /* Notifications.swift in Sources */,
+				BC6433A8262EF2320010BA32 /* NotificationMessage.swift in Sources */,
+				BC6433B5262EF2320010BA32 /* MidiFilterSettings.swift in Sources */,
+				BC6433C1262EF2320010BA32 /* MidiChannel+Utils.swift in Sources */,
+				BC6433AF262EF2320010BA32 /* Device.swift in Sources */,
+				BC6433C0262EF2320010BA32 /* MidiObjectProperties.swift in Sources */,
+				BC6433AB262EF2320010BA32 /* Send.swift in Sources */,
+				BC6433BB262EF2320010BA32 /* MidiNote.swift in Sources */,
+				BC6433B7262EF2320010BA32 /* MidiEventsEncoder.swift in Sources */,
+				BC6433BE262EF2320010BA32 /* MidiEventType.swift in Sources */,
+				BC6433BF262EF2320010BA32 /* MidiEvent.swift in Sources */,
+				BC6433B2262EF2320010BA32 /* EndPoint.swift in Sources */,
+				BC6433AA262EF2320010BA32 /* Port.swift in Sources */,
+				BC6433B0262EF2320010BA32 /* Errors.swift in Sources */,
+				BC6433AC262EF2320010BA32 /* Thru.swift in Sources */,
+				BC6433B3262EF2320010BA32 /* MidiEventTypeMaskSelector.swift in Sources */,
+				BC6433C2262EF2320010BA32 /* MidiRange.swift in Sources */,
+				BC6433AE262EF2320010BA32 /* Client.swift in Sources */,
+				BC6433A7262EF2320010BA32 /* SwiftMIDI.swift in Sources */,
+				BC6433B6262EF2320010BA32 /* Notes.swift in Sources */,
+				BC6433BA262EF2320010BA32 /* MidiPacketsFilter.swift in Sources */,
+				BC6433B9262EF2320010BA32 /* MidiEventsDecoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,7 +514,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.moosefactory.SwiftMIDI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -520,7 +539,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.moosefactory.SwiftMIDI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;

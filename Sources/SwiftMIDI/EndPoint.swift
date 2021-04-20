@@ -167,4 +167,11 @@ public extension SwiftMIDI {
         }
         return ref
     }
+    
+    static func getConnections(for endpoint: MIDIEndpointRef) -> [MIDIObjectRef] {
+        let connections = try? SwiftMIDI.getMidiObjects(object: endpoint, propertyID: kMIDIPropertyConnectionUniqueID as String)
+        return connections ?? []
+    }
+
 }
+
