@@ -37,10 +37,25 @@ public class MidiPacketsFilter {
     
     public var filterState: FilterState
     
+    
+    /// A tap to receive midi events as MidiEvent objects
     public var eventsTap: ((MidiEvent)->Void)?
     
+    /// A tap to receive midiInputBuffers
+    ///
+    /// MidiInputBuffer is an intermediary between raw packets and midi events.
+    ///
+    /// It represents the midi input in a more convenient format.
+    /// It does not create events objects, but rather stores events by types in a primitive format ( Array of Ints )
+    /// This is usefull for recording, to catch events with an accurate timing
+    
     public var midiInputBufferTap: ((MidiInputBuffer)->Void)?
-
+    
+    /// writePacketsToOutput
+    /// If this is true, the filter will allocate a MidiPacketList containing only filtered packets.
+    
+    public var writePacketsToOutput: Bool = true
+    
     public init(settings: MidiFilterSettings) {
         self.settings = settings
         self.filterState = FilterState()
@@ -142,7 +157,7 @@ public class MidiPacketsFilter {
                 // In some cases, like pausing xCode, it looks like the packet size can grow far beyond the limit
                 // so we only process the first 256 bytes. I'm not sure of what I am doing here,
                 // but I'm sure it crashes if i >= 256
-                for i in 0..<min(Int(p.length), 256) {
+                for i in 0..<min(bytes.count, Int(p.length)) {
                     byte = UInt8(bytes[i])
                     
                     // Read Status Byte if needed
@@ -345,12 +360,14 @@ public class MidiPacketsFilter {
     
     public func filter(packetList: UnsafePointer<MIDIPacketList>) -> Output {
         
+        
         if settings.willPassThrough { return Output(packets: packetList.pointee) }
         
         let chrono = Date()
         
         // Get final number of events
         let (numberOfPackets, count, dataSize) = preflight(in: packetList)
+        
         guard count > 0 else {
             return Output(packets: nil) }
         
@@ -359,15 +376,29 @@ public class MidiPacketsFilter {
         
         let output = Output(packets: outPackets)
         
+        // The size needed for output packets
+        // If we don't write output, we allocate a single byte to run the loop
+        let outDataSize = writePacketsToOutput ? Int(dataSize) : 1
         
         let midiInputBuffer: MidiInputBuffer? = midiInputBufferTap == nil ? nil : MidiInputBuffer()
-        let targetBytes = [UInt8].init(unsafeUninitializedCapacity: Int(dataSize)) { (targetBytes, count) in
-            count = Int(dataSize)
+        
+        
+        let targetBytes = [UInt8].init(unsafeUninitializedCapacity: outDataSize) { (targetBytes, count) in
+            count = Int(targetBytes.count)
             
             var writeIndex = 0
             
             var p = packetList.pointee.packet
             
+            func writeByte(byte: UInt8) {
+                if writeIndex >= count {
+                    print("[MIDI FILTER] Wrong write index \(writeIndex) ( size: \(outDataSize) )- line \(#line) in \(#file)")
+                } else {
+                    targetBytes[writeIndex] = byte
+                    writeIndex += 1
+                }
+            }
+
             // Scan the midi data and cut if necessary
             
             var currentStatus: UInt8 = 0
@@ -396,13 +427,13 @@ public class MidiPacketsFilter {
             // The control number being scanned. We need it to capture 2 significant bytes controls
             var controlNumber: UInt8 = 0
             
-            for _ in 0 ..< numberOfPackets {
-                if writeIndex > dataSize { continue }
+            for packetIndex in 0 ..< numberOfPackets {
+
                 output.timeStamp = p.timeStamp
                 withUnsafeBytes(of: p.data) { bytes in
-                    for i in 0..<min(Int(p.length), 256) {
+                    for i in 0..<min(bytes.count, Int(p.length)) {
                         byte = UInt8(bytes[i])
-                        
+
                         // Read Status Byte if needed
                         
                         // 1 - read status
@@ -440,8 +471,9 @@ public class MidiPacketsFilter {
                                 
                                 // --- WRITE ----
                                 
-                                targetBytes[writeIndex] = byte
-                                writeIndex += 1
+                                if writePacketsToOutput {
+                                    writeByte(byte: byte)
+                                }
                             }
                             else {
                                 if settings.tracksActivatedChannels {
@@ -479,24 +511,24 @@ public class MidiPacketsFilter {
                             // We process two values controls ( number < 64 )
                             else if controlNumber < 120 {
                                 if controlNumber < 64 {
-                                controlByteSelector = false
-                                
-                                if controlNumber >= 32 && controlNumber < 64 && filterState.lsbValue == 0xFF {
-                                    filterState.lsbValue = byte
-                                }
-                                else if controlNumber >= 0 && controlNumber < 32 && filterState.msbValue == 0xFF {
-                                    filterState.msbValue = byte
-                                }
-                                
-                                if filterState.msbValue != 0xFF && filterState.lsbValue != 0xFF {
-                                    if controlNumber == 0 || controlNumber == 32 {
-                                        let shiftedMSB = settings.limitTo127Banks ? 0 : Int16(filterState.msbValue << 7)
-                                        let bankNumber = shiftedMSB | Int16(filterState.lsbValue)
-                                        filterState.lsbValue = 0xFF
-                                        filterState.msbValue = 0xFF
-                                        filterState.bank.values[Int(channel)] = bankNumber
+                                    controlByteSelector = false
+                                    
+                                    if controlNumber >= 32 && controlNumber < 64 && filterState.lsbValue == 0xFF {
+                                        filterState.lsbValue = byte
                                     }
-                                }
+                                    else if controlNumber >= 0 && controlNumber < 32 && filterState.msbValue == 0xFF {
+                                        filterState.msbValue = byte
+                                    }
+                                    
+                                    if filterState.msbValue != 0xFF && filterState.lsbValue != 0xFF {
+                                        if controlNumber == 0 || controlNumber == 32 {
+                                            let shiftedMSB = settings.limitTo127Banks ? 0 : Int16(filterState.msbValue << 7)
+                                            let bankNumber = shiftedMSB | Int16(filterState.lsbValue)
+                                            filterState.lsbValue = 0xFF
+                                            filterState.msbValue = 0xFF
+                                            filterState.bank.values[Int(channel)] = bankNumber
+                                        }
+                                    }
                                 } else {
                                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
                                     controlNumber = 0
@@ -567,16 +599,16 @@ public class MidiPacketsFilter {
                                         }
                                         
                                         // --- WRITE ----
-                                        if !wroteStatus {
-                                            wroteStatus = true
-                                            targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                                | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                            writeIndex += 1
+                                        
+                                        if writePacketsToOutput {
+                                            if !wroteStatus {
+                                                wroteStatus = true
+                                                writeByte(byte:  (currentStatus & 0xF0)
+                                                            | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                            }
+                                            writeByte(byte: data1)
+                                            writeByte(byte: byte)
                                         }
-                                        targetBytes[writeIndex] = data1
-                                        writeIndex += 1
-                                        targetBytes[writeIndex] = byte
-                                        writeIndex += 1
                                         
                                         if let tap = eventsTap {
                                             tap(MidiEvent(type: .noteOn, timestamp: p.timeStamp,
@@ -628,16 +660,16 @@ public class MidiPacketsFilter {
                                 }
                                 
                                 // --- WRITE ----
-                                if !wroteStatus {
-                                    wroteStatus = true
-                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                    writeIndex += 1
+                                
+                                if writePacketsToOutput {
+                                    if !wroteStatus {
+                                        wroteStatus = true
+                                        writeByte(byte: (currentStatus & 0xF0)
+                                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                    }
+                                    writeByte(byte: data1)
+                                    writeByte(byte: byte)
                                 }
-                                targetBytes[writeIndex] = data1
-                                writeIndex += 1
-                                targetBytes[writeIndex] = byte
-                                writeIndex += 1
                                 // -------------
                                 
                                 if let tap = eventsTap {
@@ -648,7 +680,7 @@ public class MidiPacketsFilter {
                                 if let mib = midiInputBuffer {
                                     mib.addNoteOff(pitch: data1, velocity: byte)
                                 }
-
+                                
                                 byteSelector = false
                             } else {
                                 data1 = byte
@@ -660,16 +692,15 @@ public class MidiPacketsFilter {
                             // Check if current byte is control number or value
                             if byteSelector {
                                 // --- WRITE ----
-                                if !wroteStatus {
-                                    wroteStatus = true
-                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                    writeIndex += 1
+                                if writePacketsToOutput {
+                                    if !wroteStatus {
+                                        wroteStatus = true
+                                        writeByte(byte: (currentStatus & 0xF0)
+                                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                    }
+                                    writeByte(byte: data1)
+                                    writeByte(byte: byte)
                                 }
-                                targetBytes[writeIndex] = data1
-                                writeIndex += 1
-                                targetBytes[writeIndex] = byte
-                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -683,17 +714,16 @@ public class MidiPacketsFilter {
                             // Check if current byte is control number or value
                             if byteSelector {
                                 // --- WRITE ----
-                                if !wroteStatus {
-                                    wroteStatus = true
-                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                    writeIndex += 1
+                                if writePacketsToOutput {
+                                    if !wroteStatus {
+                                        wroteStatus = true
+                                        writeByte(byte: (currentStatus & 0xF0)
+                                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                    }
+                                    
+                                    writeByte(byte: data1)
+                                    writeByte(byte: byte)
                                 }
-                                
-                                targetBytes[writeIndex] = data1
-                                writeIndex += 1
-                                targetBytes[writeIndex] = byte
-                                writeIndex += 1
                                 // -------------
                                 
                                 output.pitchBend.values[Int(channel)] = ( Int16(data1) + Int16(byte) << 7)
@@ -708,16 +738,16 @@ public class MidiPacketsFilter {
                             
                             if byteSelector {
                                 // --- WRITE ----
-                                if !wroteStatus {
-                                    wroteStatus = true
-                                    targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                        | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                    writeIndex += 1
+                                if writePacketsToOutput {
+                                    if !wroteStatus {
+                                        wroteStatus = true
+                                        writeByte(byte: (currentStatus & 0xF0)
+                                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                    }
+                                    
+                                    writeByte(byte: data1)
+                                    writeByte(byte: byte)
                                 }
-                                targetBytes[writeIndex] = data1
-                                writeIndex += 1
-                                targetBytes[writeIndex] = byte
-                                writeIndex += 1
                                 // -------------
                                 
                                 byteSelector = false
@@ -730,30 +760,31 @@ public class MidiPacketsFilter {
                         
                         case MidiEventType.afterTouch.rawValue:
                             // --- WRITE ----
-                            if !wroteStatus {
-                                wroteStatus = true
-                                targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                writeIndex += 1
+                            if writePacketsToOutput {
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    writeByte(byte: (currentStatus & 0xF0)
+                                                | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                }
+                                
+                                writeByte(byte: byte)
                             }
-                            
-                            targetBytes[writeIndex] = byte
-                            writeIndex += 1
                         // -------------
                         
                         case MidiEventType.programChange.rawValue:
                             
                             output.programChanges.values[Int(channel)] = Int16(byte)
                             // --- WRITE ----
-                            if !wroteStatus {
-                                wroteStatus = true
-                                targetBytes[writeIndex] = (currentStatus & 0xF0)
-                                    | (settings.channelsMap.channels[Int(channel)] & 0x0F)
-                                writeIndex += 1
+                            if writePacketsToOutput {
+                                if !wroteStatus {
+                                    wroteStatus = true
+                                    writeByte(byte: (currentStatus & 0xF0)
+                                                | (settings.channelsMap.channels[Int(channel)] & 0x0F))
+                                }
+                                
+                                writeByte(byte: byte)
+                                
                             }
-                            
-                            targetBytes[writeIndex] = byte
-                            writeIndex += 1
                         // -------------
                         
                         // 0 data byte events
@@ -766,13 +797,13 @@ public class MidiPacketsFilter {
                         
                     } // End scan
                 }
-                    
+                
                 // If a controlNumber that potentially takes 2 bytes is set and has not be completed, we store the value
                 if controlNumber > 0 && controlNumber < 64 {
                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
                     controlNumber = 0
                 }
-
+                
                 // Go to next packet ( should never happen for musical events )
                 p = MIDIPacketNext(&p).pointee
             }
