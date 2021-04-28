@@ -32,43 +32,84 @@ import Foundation
 
 /// Returns the note as a string
 public extension UInt8 {
-    var toNote: String { SwiftMIDINotes[Int(self)] }
+    var toNote: String { SwiftMidiNote[Int(self)]?.string ?? "!!" }
 }
 
-/// An array containing all notes as strings ["C0", "C#0", "D0", ...]
-public let SwiftMIDINotes: [String] = {
-    var noteLetters = ["C", "C", "D", "D", "E", "F", "F", "G", "G", "A", "A", "B"]
-    var sharpLetters = ["", "#", "", "#", "", "", "#", "", "#", "", "#", ""]
-    var notes = [String]()
-    var octave = 0
-    var n = 0
-    for value in 0...255 {
-        let note = noteLetters[n]
-        let s = sharpLetters[n]
-        notes.append("\(note)\(octave)\(s)")
-        n += 1
-        if n == 12 {
-            n = 0
-            octave += 1
-        }
-    }
-    return notes
-}()
+public struct SwiftMidiNote: CustomStringConvertible {
+    public private(set) var number: Int
+    public private(set) var numberInOctave: Int
+    public private(set) var letter: String
+    public private(set) var string: String
+    public private(set) var stringWithoutOctave: String
+    public private(set) var isWhite: Bool
 
-/// An array containing all notes as strings ["C0", "C#0", "D0", ...]
-public let SwiftMIDIPlainNotes: [String] = {
-    var noteLetters = ["C", "D", "E", "F", "G", "A", "B"]
-    var notes = [String]()
-    var octave = 0
-    var n = 0
-    for value in 0...255 {
-        let note = noteLetters[n]
-        notes.append("\(note)\(octave)")
-        n += 1
-        if n == 7 {
-            n = 0
-            octave += 1
-        }
+    private static var _notes: [SwiftMidiNote]?
+    
+    public static var maxNotes = 256 { didSet {
+        _notes = nil
+    }}
+    
+    public static subscript (index: Int) -> SwiftMidiNote? {
+        guard index >= 0 && index < maxNotes else { return nil }
+        return all[index]
     }
-    return notes
-}()
+    
+    /// An array containing all notes as strings ["C0", "C#0", "D0", ...]
+    /// associated to booleans indicating if note is white
+    public static let all: [SwiftMidiNote] = {
+        guard _notes == nil else { return _notes! }
+        var noteLetters = ["C", "C", "D", "D", "E", "F", "F", "G", "G", "A", "A", "B"]
+        var sharpLetters = ["", "#", "", "#", "", "", "#", "", "#", "", "#", ""]
+        var notes = [SwiftMidiNote]()
+        var octave = 0
+        var n = 0
+        for value in 0..<maxNotes {
+            let noteLetter = noteLetters[n]
+            let s = sharpLetters[n]
+            let note = SwiftMidiNote(number: value, numberInOctave: value % 12,
+                                     letter: "\(noteLetter)",
+                                     string: "\(noteLetter)\(octave)\(s)",
+                                     stringWithoutOctave: "\(noteLetter)\(s)",
+                                     isWhite: s.isEmpty)
+            notes.append(note)
+            n += 1
+            if n == 12 {
+                n = 0
+                octave += 1
+            }
+        }
+        _notes = notes
+        return notes
+    }()
+    
+    /// Returns all white notes
+    public static var whites: [SwiftMidiNote] {
+        all.filter { $0.isWhite }
+    }
+    
+    /// Returns all black notes
+    public static var blacks: [SwiftMidiNote] {
+        all.filter { !$0.isWhite }
+    }
+        
+    /// Returns full string description ( note and octave )
+    public var description: String {
+        return string
+    }
+    
+    // MARK: Common tests
+    
+    /// Returns true if note is a C
+    public var isC: Bool { numberInOctave == 0 }
+
+    /// Returns true if note is a black key
+    public var isBlack: Bool { !isWhite }
+
+    /// Returns true if note has a black key before
+    public var hasBlackBefore: Bool { isWhite && numberInOctave != 0 && numberInOctave != 5 }
+
+
+    /// Returns true if note has a black key after
+    public var hasBlackAfter: Bool { isWhite && numberInOctave != 4 && numberInOctave != 11 }
+}
+
