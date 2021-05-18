@@ -42,12 +42,7 @@ class MidiEventsDecoder {
         
         for _ in 0 ..< numPackets {
             if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0,
-               let type = MidiEventType(rawValue: (p.data.0 & 0xF0)) {
-                let event = MidiEvent(type: type,
-                                      timestamp: p.timeStamp,
-                                      channel: (p.data.0 & 0x0F),
-                                      value1: p.data.1,
-                                      value2: p.data.2)
+               let event = MidiEvent(midiPacket: p) {
                 out.append(event)
             }
             p = MIDIPacketNext(&p).pointee

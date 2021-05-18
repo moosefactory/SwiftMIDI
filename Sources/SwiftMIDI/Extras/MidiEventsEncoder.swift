@@ -36,7 +36,8 @@ import CoreMIDI
 /// Encode a midi events array into a MIDIPacketList
 public class MidiEventsEncoder {
     
-    public func encodePacketList(with events: [MidiEvent]) -> MIDIPacketList? {
+    static public func encodePacketList(with events: [MidiEvent],
+                                        channelOverride: UInt8? = nil) -> MIDIPacketList? {
         let numberOfEvents: UInt32 = UInt32(events.count)
         guard numberOfEvents > 0 else { return nil }
         
@@ -50,7 +51,8 @@ public class MidiEventsEncoder {
             // type and channels are equal ( status byte equals )
             var runningStatus: UInt8 = 0
             for event in events.sorted(by: { return $0.status < $1.status} ) {
-                let status: UInt8 = (event.type.rawValue & 0xF0) | (event.channel & 0x0F)
+                let channel = channelOverride ?? event.channel
+                let status: UInt8 = (event.type.rawValue & 0xF0) | (channel & 0x0F)
                 // Encode status if needed
                 if status != runningStatus {
                     runningStatus = status

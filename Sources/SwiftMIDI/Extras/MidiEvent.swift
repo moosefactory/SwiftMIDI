@@ -42,10 +42,11 @@ public struct MidiEvent {
     public let status: UInt8
     public let value1: UInt8
     public let value2: UInt8
-
+    
     public let subType: MidiEventSubType
     
     public var numberOfDataBytes: UInt8
+    public var midiPacketSource: MIDIPacket?
     
     /// channelMode
     ///
@@ -58,6 +59,16 @@ public struct MidiEvent {
     // The mask to apply to data[0] to get type and channel
     static let channelMask: UInt8 = 0x0F
     static let typeMask: UInt8 = 0xF0
+    
+    public init?(midiPacket: MIDIPacket) {
+        guard let t = MidiEventType(rawValue: (midiPacket.data.0 & 0xF0)) else { return nil }
+        self.init(type: t,
+                  timestamp: midiPacket.timeStamp,
+                  channel: midiPacket.data.0 & 0x0F,
+                  value1: midiPacket.data.1,
+                  value2: midiPacket.data.2)
+        midiPacketSource = midiPacket
+    }
     
     public init(type: MidiEventType, timestamp: UInt64 = 0, channel: UInt8, value1: UInt8, value2: UInt8 = 0) {
         self.type = type
@@ -110,7 +121,7 @@ extension MidiEvent: CustomStringConvertible {
             let pitchStr = String("    \(pitch)".suffix(4))
             let fractionalPitch = Int( 100 * (( Float(pitch) / Float(0x3FFF) * 2) - 1))
             let fractionalPitchString = "   \(fractionalPitch)%".suffix(4)
-
+            
             return " Pitch   \(fractionalPitchString)   Value: \(pitchStr) (\(val1),\(val2)) CH:\(chanStr)  "
         case .realTimeMessage:
             return " Clock 1/24 Note "
@@ -121,11 +132,11 @@ extension MidiEvent: CustomStringConvertible {
 // MARK: - Utilities
 
 public extension MidiEvent {
-
+    
     var noteParams: MidiNote {
         return MidiNote(note: value1, velocity: value2)
     }
-
+    
     /// noteOff
     ///
     /// Returns current event with noteOff type.
@@ -134,7 +145,7 @@ public extension MidiEvent {
     func noteOff() -> MidiEvent {
         return MidiEvent(type: .noteOff, timestamp: timestamp, channel: channel, value1: value1, value2: 0)
     }
-
+    
     /// bytes
     /// Returns the exact bytes to append to midi message
     ///
@@ -171,6 +182,24 @@ public extension MidiEvent {
             return ([], status)
         }
     }
+    
+    func midiPacket(channel: UInt8? = nil) -> MIDIPacket {
+        var packet = MIDIPacket()
+        packet.timeStamp = 0
+        packet.length = UInt16(type.dataLength)
+        packet.data.0 = type.rawValue | (channel ?? self.channel)
+        switch type.dataLength {
+        case 1:
+            packet.data.1 = value1
+        case 2:
+            packet.data.1 = value1
+            packet.data.2 = value2
+        default:
+            break
+        }
+
+        return packet
+    }
 }
 
 public extension Array where Element == MidiEvent {
@@ -183,8 +212,9 @@ public extension Array where Element == MidiEvent {
         }
         return out
     }
-    
-    var asPacketList: MIDIPacketList? {
-        return MidiEventsEncoder().encodePacketList(with: self)
+        
+    func asPacketList(channelOverride: UInt8? = nil) -> MIDIPacketList? {
+        return MidiEventsEncoder.encodePacketList(with: self, channelOverride: channelOverride)
     }
+
 }
