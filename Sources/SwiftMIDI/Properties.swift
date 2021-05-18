@@ -225,7 +225,7 @@ extension SwiftMIDI {
         }
         
         let numberOfConnections: Int = data.count / MemoryLayout<MIDIObjectRef>.size
-        var out = data.withUnsafeBytes { (bytes) -> [MIDIObjectRef] in
+        let out = data.withUnsafeBytes { (bytes) -> [MIDIObjectRef] in
             
             let int32Pointer = bytes.bindMemory(to: MIDIObjectRef.self)
             

@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
 	s.name             = "SwiftMIDI"
-	s.version          = "1.0.2"
+	s.version          = "1.0.3"
 	s.summary          = "SwiftMIDI is a cross-platform (iOS/MacOS) Utility Library that adds Swift layer over CoreMidi."
 	s.description      = <<-DESC
 					    SwiftMIDI is a cross-platform (iOS/MacOS) Utility Library that adds Swift layer over CoreMidi.

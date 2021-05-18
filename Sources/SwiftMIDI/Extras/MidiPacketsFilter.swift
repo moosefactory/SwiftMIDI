@@ -427,7 +427,7 @@ public class MidiPacketsFilter {
             // The control number being scanned. We need it to capture 2 significant bytes controls
             var controlNumber: UInt8 = 0
             
-            for packetIndex in 0 ..< numberOfPackets {
+            for _ in 0 ..< numberOfPackets {
 
                 output.timeStamp = p.timeStamp
                 withUnsafeBytes(of: p.data) { bytes in
