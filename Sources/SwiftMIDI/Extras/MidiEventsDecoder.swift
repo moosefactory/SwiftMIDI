@@ -31,13 +31,22 @@
 import Foundation
 import CoreMIDI
 
-class MidiEventsDecoder {
+public class MidiEventsDecoder {
     
-    public static func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
+    var packetSizeLimit: UInt32 = 1024
+    
+    public init() {
+        
+    }
+    
+    public func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
                                     channelMask: MidiChannelMask = .all,
                                     completion: ([MidiEvent])->Void) {
         var out = [MidiEvent]()
-        let numPackets = packetList.pointee.numPackets
+        
+        let numPackets = min(packetList.pointee.numPackets, packetSizeLimit)
+        
+        
         var p = packetList.pointee.packet
         
         for _ in 0 ..< numPackets {
