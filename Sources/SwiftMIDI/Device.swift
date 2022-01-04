@@ -136,11 +136,7 @@ public extension SwiftMIDI {
     
     @available(macOS 10.0, *)
     static func getNumberOfEntities(for device: MIDIDeviceRef) throws -> Int {
-        let numberOfEntities = MIDIDeviceGetNumberOfEntities(device)
-        guard numberOfEntities > 0 else {
-            throw Errors.noEntityInSystem
-        }
-        return numberOfEntities
+        MIDIDeviceGetNumberOfEntities(device)
     }
     
     /// MIDIDeviceGetEntity

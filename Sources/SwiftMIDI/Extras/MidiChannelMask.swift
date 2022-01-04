@@ -62,10 +62,22 @@ public extension MidiChannelMask {
     }
     
     /// Init with one channel
-    init(channel: UInt8) {
-        self = 0x0001 << channel
+    init(channel: UInt8? = nil) {
+        if let channel = channel, channel < 16 {
+            self = 0x0001 << channel
+        } else {
+            self = .none
+        }
     }
-    
+
+    init(channel: Int? = nil) {
+        if let channel = channel, channel >= 0, channel < 16 {
+            self = 0x0001 << channel
+        } else {
+            self = .none
+        }
+    }
+
     static let all: MidiChannelMask = 0xFFFF
     static let none: MidiChannelMask = 0x0000
     static let channel1: MidiChannelMask = 0x0001

@@ -134,7 +134,7 @@ public class MidiPacketsFilter {
         var numberOfEvents: UInt32 = 0
         var dataSize: UInt32 = 0
         var p = packetList.pointee.packet
-        let numberOfPackets = packetList.pointee.numPackets
+        let numberOfPackets = min(packetList.pointee.numPackets, 1024)
         
         
         // Scan the midi data and cut if necessary
@@ -358,8 +358,7 @@ public class MidiPacketsFilter {
     ///
     /// THIS ONLY WORK WITH ONE MIDI PACKET - DO NOT PASS SYSEX THROUGH THIS
     
-    public func filter(packetList: UnsafePointer<MIDIPacketList>) -> Output {
-        
+    public func filter(packetList: UnsafePointer<MIDIPacketList>) -> MidiPacketsFilter.Output {
         
         if settings.willPassThrough { return Output(packets: packetList.pointee) }
         
