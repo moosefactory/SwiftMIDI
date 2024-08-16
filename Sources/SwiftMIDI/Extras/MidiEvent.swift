@@ -60,6 +60,13 @@ public struct MidiEvent {
     static let channelMask: UInt8 = 0x0F
     static let typeMask: UInt8 = 0xF0
     
+    public var formatedToMilliseconds: String {
+        let d = DateFormatter()
+        //d.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        d.dateFormat = "HH:mm:ss.SSS"
+        return d.string(from: Date(timeIntervalSince1970: Double(timestamp) / 1000000000))
+    }
+    
     public init?(midiPacket: MIDIPacket) {
         guard let t = MidiEventType(rawValue: (midiPacket.data.0 & 0xF0)) else { return nil }
         self.init(type: t,

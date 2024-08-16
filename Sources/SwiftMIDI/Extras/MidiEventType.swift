@@ -45,6 +45,10 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
     case pitchBend = 0xE0
     case realTimeMessage = 0xF0
 
+    public var isNote: Bool {
+        return self == .noteOn || self == .noteOff
+    }
+    
     /// dataLength
     ///
     /// The data length that follows the status (Type|Channel) byte
