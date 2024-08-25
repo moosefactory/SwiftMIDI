@@ -35,17 +35,18 @@ import CoreMIDI
 ///
 /// A simple midi note object
 
-public struct MidiNote: CustomStringConvertible, CustomDebugStringConvertible {
+public struct NoteObject: CustomStringConvertible, CustomDebugStringConvertible {
 
     public var note: UInt8 = 36
     public var velocity: UInt8 = 100
+    public var length: UInt?
 
     public var debugDescription: String {
-        return "\(note.toNote) (\(note) \(velocity))"
+        return "\(note.asNoteString) (\(note) \(velocity))"
     }
 
     public var description: String {
-        return "\(note.toNote)-\(velocity)"
+        return "\(note.asNoteString)-\(velocity)"
     }
     
     public mutating func set(note: UInt8) {
@@ -55,7 +56,11 @@ public struct MidiNote: CustomStringConvertible, CustomDebugStringConvertible {
     public mutating func set(velocity: UInt8) {
         self.velocity = velocity
     }
-    
+
+    public mutating func set(length: UInt) {
+        self.length = length
+    }
+
     // A unique note id
     func noteID(for channel: UInt) -> UInt16 {
         return UInt16(channel) << 8 + UInt16(note)
@@ -64,7 +69,7 @@ public struct MidiNote: CustomStringConvertible, CustomDebugStringConvertible {
 
 // MARK: - Note <-> Packet
 
-public extension MidiNote {
+public extension NoteObject {
     
      func noteOnPacket(for channel: UInt8) -> MIDIPacket {
         var noteOnPacket = MIDIPacket()
@@ -87,7 +92,7 @@ public extension MidiNote {
 
 // MARK: - Note <-> MidiEvent
 
-public extension MidiNote {
+public extension NoteObject {
     
     func noteOnEvent(for channel: UInt8) -> MidiEvent {
         return MidiEvent.noteOn(channel: channel, note: note, velocity: velocity)
@@ -100,10 +105,11 @@ public extension MidiNote {
 
 public extension MidiEvent {
     
-    var note: MidiNote? {
+    var note: NoteObject? {
         guard type == .noteOn else {
             return nil
         }
-        return MidiNote(note: value1, velocity: value2)
+        return NoteObject(note: value1, velocity: value2)
     }
+
 }

@@ -25,37 +25,68 @@
  THE SOFTWARE. */
 /*--------------------------------------------------------------------------*/
 
-//  MidiEventsDecoder.swift
-//  Created by Tristan Leblanc on 08/01/2021.
+//  ControlObject.swift
+//  Created by Tristan Leblanc on 25/08/2024.
 
 import Foundation
 import CoreMIDI
 
-public class MidiEventsDecoder {
-    
-    var packetSizeLimit: UInt32 = 4096
-    
-    public init() {
-        
+/// ControlObject
+///
+/// A simple midi control object
+
+public struct ControlObject: CustomStringConvertible, CustomDebugStringConvertible {
+
+    public var number: UInt8
+    public var value: UInt8
+
+    public var debugDescription: String {
+        return "Ctrl-\(number) = (\(value))"
+    }
+
+    public var description: String {
+        return "Ctrl-\(number) = (\(value))"
     }
     
-    public func unpackEvents(_ packetList: UnsafePointer<MIDIPacketList>,
-                                    channelMask: MidiChannelMask = .all,
-                                    completion: ([MidiEvent])->Void) {
-        var out = [MidiEvent]()
-        
-        let numPackets = min(packetList.pointee.numPackets, packetSizeLimit)
-        
-        
-        var p = packetList.pointee.packet
-        
-        for _ in 0 ..< numPackets {
-            if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0,
-               let event = MidiEvent(midiPacket: p) {
-                out.append(event)
-            }
-            p = MIDIPacketNext(&p).pointee
+    public mutating func set(number: UInt8) {
+        self.number = number
+    }
+
+    public mutating func set(value: UInt8) {
+        self.value = value
+    }
+    
+}
+
+// MARK: - Control <-> Packet
+
+public extension NoteObject {
+    
+     func controlPacket(for channel: UInt8) -> MIDIPacket {
+        var packet = MIDIPacket()
+         packet.length = 3
+         packet.data.1 = note
+         packet.data.2 = velocity
+         packet.data.0 = MidiEventType.control.rawValue + (channel & 0x0F)
+        return packet
+    }
+}
+
+// MARK: - Control <-> MidiEvent
+
+public extension ControlObject {
+    
+    func controlEvent(for channel: UInt8) -> MidiEvent {
+        return MidiEvent.control(channel: channel, number: number, value: value)
+    }
+}
+
+public extension MidiEvent {
+
+    var control: ControlObject? {
+        guard type == .control else {
+            return nil
         }
-        completion(out)
+        return ControlObject(number: value1, value: value2)
     }
 }

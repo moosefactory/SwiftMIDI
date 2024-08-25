@@ -32,7 +32,7 @@ import Foundation
 
 /// Returns the note as a string
 public extension UInt8 {
-    var toNote: String { SwiftMidiNote[Int(self)]?.string ?? "!!" }
+    var asNoteString: String { SwiftMidiNote[Int(self)]?.string ?? "!!" }
 }
 
 // MARK: - Not Saved
