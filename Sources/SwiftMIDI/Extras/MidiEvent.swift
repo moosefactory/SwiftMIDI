@@ -108,7 +108,10 @@ extension MidiEvent: CustomStringConvertible {
         let val1 = String("  \(value1)".suffix(3))
         let val2 = String("  \(value2)".suffix(3))
         switch type {
-        
+        case .notSet:
+            let note = String("  \(value1.asNoteString)".suffix(3))
+            return "Type Not Set "
+
         case .noteOn:
             let note = String("  \(value1.asNoteString)".suffix(3))
             return " Note On     \(note)     Value: \(val1)   Velo: \(val2)  CH:\(chanStr) "

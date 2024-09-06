@@ -36,6 +36,7 @@ import CoreMIDI
 /// The commons event types for musical midi events
 
 public enum MidiEventType: UInt8, CustomStringConvertible {
+    case notSet = 0x00
     case noteOff = 0x80
     case noteOn = 0x90
     case polyAfterTouch = 0xA0
@@ -45,6 +46,10 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
     case pitchBend = 0xE0
     case realTimeMessage = 0xF0
 
+    public init?(statusByte: UInt8) {
+        self.init(rawValue: statusByte & 0xF0) 
+    }
+    
     public var isNote: Bool {
         return self == .noteOn || self == .noteOff
     }
@@ -59,7 +64,7 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
             return 2
         case .afterTouch, .programChange:
             return 1
-        case .realTimeMessage:
+        case .realTimeMessage, .notSet:
             return 0
         }
     }
@@ -70,6 +75,8 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
     
     public var description: String {
         switch self {
+        case .notSet:
+            return "Type not set"
         case .noteOn:
             return "Note On"
         case .noteOff:
@@ -111,6 +118,8 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
             return .pitchBend
         case .realTimeMessage:
             return .realTimeMessage
+        case .notSet:
+            return .notSet
         }
     }
 }
@@ -144,6 +153,8 @@ public struct MidiEventTypeMask: Codable, OptionSet, CustomStringConvertible {
     public var rawValue: UInt8 = 0
     
     public init(rawValue: UInt8 = 0xFF) { self.rawValue = rawValue }
+    
+    static public let notSet = MidiEventTypeMask([])
     
     static public let noteOn = MidiEventTypeMask(rawValue: 0x01)
     static public let noteOff = MidiEventTypeMask(rawValue: 0x02)

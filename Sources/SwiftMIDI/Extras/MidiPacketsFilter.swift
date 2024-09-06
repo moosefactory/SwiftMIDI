@@ -134,16 +134,16 @@ public class MidiPacketsFilter {
         var numberOfEvents: UInt32 = 0
         var dataSize: UInt32 = 0
         var p = packetList.pointee.packet
-        let numberOfPackets = min(packetList.pointee.numPackets, 1024)
+        let numberOfPackets = packetList.pointee.numPackets
         
         
         // Scan the midi data and cut if necessary
         
         var currentStatus: UInt8 = 0
-        var type: UInt8 = 0
+        var type: MidiEventType = .notSet
         var channel: UInt8 = 0
         // true if current byte is velocity
-        var byteSelector: Bool = false
+        var byteSelectorIsVelocity: Bool = false
         // true if the whole event is skipped
         var skipTrain = false
         
@@ -152,12 +152,13 @@ public class MidiPacketsFilter {
         var checkedStatus: Bool = false
         var keepStatus: Bool = false
         
-        for _ in 0 ..< numberOfPackets {
+        
+        for _ in 0 ..< min(numberOfPackets, 128) {
             withUnsafeBytes(of: p.data) { bytes in
-                // In some cases, like pausing xCode, it looks like the packet size can grow far beyond the limit
+                // In some cases, like pausing from xCode, it looks like the packet size can grow far beyond the limit
                 // so we only process the first 256 bytes. I'm not sure of what I am doing here,
                 // but I'm sure it crashes if i >= 256
-                for i in 0..<min(bytes.count, Int(p.length)) {
+                for i in 0..<min(Int(p.length), bytes.count) {
                     byte = UInt8(bytes[i])
                     
                     // Read Status Byte if needed
@@ -170,17 +171,19 @@ public class MidiPacketsFilter {
                         keepStatus = false
                         
                         currentStatus = byte
-                        type = currentStatus & 0xF0
                         channel = currentStatus & 0x0F
                         
                         skipNote = false
                         // Reset the skip flag
                         skipTrain = false
                         
-                        byteSelector = false
+                        byteSelectorIsVelocity = false
                         checkedStatus = false
-                        if type == MidiEventType.realTimeMessage.rawValue {
-                            if !settings.eventTypes.contains(rawEventType: type) {
+                        
+                        type = MidiEventType(statusByte: currentStatus) ?? .notSet
+
+                        if type == MidiEventType.realTimeMessage{
+                            if !settings.eventTypes.contains(eventType: type) {
                                 continue
                             }
                             dataSize += 1
@@ -201,7 +204,7 @@ public class MidiPacketsFilter {
                         checkedStatus = true
                         
                         // filter events
-                        if !settings.eventTypes.contains(rawEventType: type) {
+                        if !settings.eventTypes.contains(eventType: type) {
                             skipTrain = true
                             continue
                         }
@@ -223,9 +226,9 @@ public class MidiPacketsFilter {
                     // 2 data byte events
                     
                     // If we deal with noteOns, then we filter range and velocity
-                    case MidiEventType.noteOn.rawValue:
+                    case .noteOn:
                         // Check if current byte is note or velocity
-                        if byteSelector {
+                        if byteSelectorIsVelocity {
                             if !skipNote {
                                 skipNote = byte < settings.velocityRange.lower
                                     || byte > settings.velocityRange.higher
@@ -247,76 +250,76 @@ public class MidiPacketsFilter {
                                 skipNote = false
                             }
                             // Next byte will be note number
-                            byteSelector = false
+                            byteSelectorIsVelocity = false
                         } else {
                             skipNote = byte < settings.noteRange.lower
                                 || byte > settings.noteRange.higher
                             // Next byte will be velocity
-                            byteSelector = true
+                            byteSelectorIsVelocity = true
                         }
                         
-                    case MidiEventType.noteOff.rawValue:
+                    case .noteOff:
                         
                         // Check if current byte is note or velocity ( no meaning on note off, but still there )
-                        if byteSelector {
+                        if byteSelectorIsVelocity {
                             dataSize += 2
                             numberOfEvents += 1
-                            byteSelector = false
+                            byteSelectorIsVelocity = false
                             if (!keepStatus) {
                                 keepStatus = true
                                 dataSize += 1
                             }
                         } else {
-                            byteSelector = true
+                            byteSelectorIsVelocity = true
                         }
                         
-                    case MidiEventType.control.rawValue:
+                    case .control:
                         
                         // Check if current byte is control number or value
-                        if byteSelector {
+                        if byteSelectorIsVelocity {
                             dataSize += 2
                             numberOfEvents += 1
-                            byteSelector = false
+                            byteSelectorIsVelocity = false
                             if (!keepStatus) {
                                 keepStatus = true
                                 dataSize += 1
                             }
                         } else {
-                            byteSelector = true
+                            byteSelectorIsVelocity = true
                         }
                         
-                    case MidiEventType.pitchBend.rawValue:
+                    case .pitchBend:
                         
                         // Check if current byte is control number or value
-                        if byteSelector {
+                        if byteSelectorIsVelocity {
                             dataSize += 2
                             numberOfEvents += 1
-                            byteSelector = false
+                            byteSelectorIsVelocity = false
                             if (!keepStatus) {
                                 keepStatus = true
                                 dataSize += 1
                             }
                         } else {
-                            byteSelector = true
+                            byteSelectorIsVelocity = true
                         }
                         
-                    case MidiEventType.polyAfterTouch.rawValue:
+                    case .polyAfterTouch:
                         
-                        if byteSelector {
+                        if byteSelectorIsVelocity {
                             dataSize += 2
                             numberOfEvents += 1
-                            byteSelector = false
+                            byteSelectorIsVelocity = false
                             if (!keepStatus) {
                                 keepStatus = true
                                 dataSize += 1
                             }
                         } else {
-                            byteSelector = true
+                            byteSelectorIsVelocity = true
                         }
                         
                     // 1 data byte events
                     
-                    case MidiEventType.afterTouch.rawValue:
+                    case .afterTouch:
                         if (!keepStatus) {
                             keepStatus = true
                             dataSize += 1
@@ -324,7 +327,7 @@ public class MidiPacketsFilter {
                         dataSize += 1
                         numberOfEvents += 1
                         
-                    case MidiEventType.programChange.rawValue:
+                    case .programChange:
                         if (!keepStatus) {
                             keepStatus = true
                             dataSize += 1
@@ -334,7 +337,7 @@ public class MidiPacketsFilter {
                         
                     // 0 data byte events
                     
-                    case MidiEventType.realTimeMessage.rawValue:
+                    case .realTimeMessage:
                         break
                     default:
                         break
@@ -359,7 +362,6 @@ public class MidiPacketsFilter {
     /// THIS ONLY WORK WITH ONE MIDI PACKET - DO NOT PASS SYSEX THROUGH THIS
     
     public func filter(packetList: UnsafePointer<MIDIPacketList>) -> MidiPacketsFilter.Output {
-        
         if settings.willPassThrough { return Output(packets: packetList.pointee) }
         
         let chrono = Date()
@@ -427,9 +429,27 @@ public class MidiPacketsFilter {
             // The control number being scanned. We need it to capture 2 significant bytes controls
             var controlNumber: UInt8 = 0
             
+            var lastTimeStamp: UInt64?
+            var meanTimeStamp: Double?
+            
+            func collectTimeStampDelta(_ delta: UInt64) {
+                if let mts = meanTimeStamp {
+                    meanTimeStamp = mts * 0.9 + Double(delta) * 0.1
+                    print("Mean Time: \(mts)")
+                }
+                else { meanTimeStamp = Double(delta) }
+            }
+            
             for _ in 0 ..< numberOfPackets {
 
+                if p.length == 0 { continue }
+                
+                if let lts = lastTimeStamp, p.timeStamp < lts { collectTimeStampDelta(lts - p.timeStamp)
+                }
+                
+                lastTimeStamp = p.timeStamp
                 output.timeStamp = p.timeStamp
+                
                 withUnsafeBytes(of: p.data) { bytes in
                     for i in 0..<min(bytes.count, Int(p.length)) {
                         byte = UInt8(bytes[i])
@@ -627,6 +647,8 @@ public class MidiPacketsFilter {
                                             writeByte(byte: byte)
                                         }
                                         
+                                        print("[MIDI FILTER] Midi Event Type: \(type) - dataSize:\(dataSize) bytes.count:\(bytes.count) count: \(numberOfPackets) wroteToOutput:\(writePacketsToOutput)")
+
                                         if let tap = eventsTap {
                                             tap(MidiEvent(type: .noteOn, timestamp: p.timeStamp,
                                                           channel: settings.channelsMap.channels[Int(channel)] & 0x0F,
@@ -689,6 +711,8 @@ public class MidiPacketsFilter {
                                 }
                                 // -------------
                                 
+                                print("[MIDI FILTER] Midi Event Type: \(type) - dataSize:\(dataSize) bytes.count:\(bytes.count) count: \(numberOfPackets) wroteToOutput:\(writePacketsToOutput)")
+
                                 if let tap = eventsTap {
                                     tap(MidiEvent(type: .noteOff, timestamp: p.timeStamp,
                                                   channel: settings.channelsMap.channels[Int(channel)] & 0x0F,

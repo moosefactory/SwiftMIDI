@@ -42,6 +42,10 @@ public class MidiFilterSettings: Codable, Equatable, CustomStringConvertible {
         didSet { updateIsThrough() }
     }
     
+    public var authorizedSourcesUniqueIDs: [Int] = [] {
+        didSet { updateIsThrough() }
+    }
+    
     /// Event Types Filter
     public var eventTypes: MidiEventTypeMask = .all {
         didSet { updateIsThrough() }

@@ -32,14 +32,14 @@ import Foundation
 import CoreMIDI
 
 public class MidiInputBuffer: CustomStringConvertible {
-    public var noteOffBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var noteOffBuffer = [UInt16].init(repeating: 0, count: 4096)
     public var numNoteOffs = 0
-    public var noteOnBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var noteOnBuffer = [UInt16].init(repeating: 0, count: 4096)
     public var numNoteOns = 0
     public var numControls = 0
     public var count = 0
 
-    public var controlsBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var controlsBuffer = [UInt16].init(repeating: 0, count: 4096)
     public var time: UInt64 = 0
     public var offset: Int32 = 0
 
@@ -56,17 +56,19 @@ public class MidiInputBuffer: CustomStringConvertible {
     }
     
     public func addControl(cc1: UInt8, cc2: UInt8) {
+        guard controlsBuffer.count < numControls else { return }
         controlsBuffer[numControls] = (UInt16(cc1) << 8) | UInt16(cc2)
         numControls += 1
-        print("[MIDIBUFFER] addControl(\(cc1),\(cc2))\r\(self.description)")
     }
     
     public func addNoteOn(pitch: UInt8, velocity: UInt8) {
+        guard noteOnBuffer.count < numNoteOns else { return }
         noteOnBuffer[numNoteOns] = (UInt16(pitch) << 8) | UInt16(velocity)
         numNoteOns += 1
     }
 
     public func addNoteOff(pitch: UInt8, velocity: UInt8) {
+        guard noteOffBuffer.count < numNoteOffs else { return }
         noteOffBuffer[numNoteOffs] = (UInt16(pitch) << 8) | UInt16(velocity)
         numNoteOffs += 1
     }
