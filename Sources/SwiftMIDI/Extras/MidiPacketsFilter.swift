@@ -386,12 +386,13 @@ public class MidiPacketsFilter {
             count = Int(targetBytes.count)
             
             var writeIndex = 0
-            
+            var cancelled: Bool = false
             var p = packetList.pointee.packet
             
             func writeByte(byte: UInt8) {
                 if writeIndex >= count {
                     print("[MIDI FILTER] Wrong write index \(writeIndex) ( size: \(outDataSize) )- line \(#line) in \(#file)")
+                    cancelled = true
                 } else {
                     targetBytes[writeIndex] = byte
                     writeIndex += 1
@@ -507,8 +508,11 @@ public class MidiPacketsFilter {
                                 controlNumber = byte
                                 controlByteSelector = true
                             }
-                            // We process two values controls ( number < 64 )
+                            // We process single or two values controls ( number < 64 )
                             else if controlNumber < 120 {
+                                
+                                // Two values control - we read first value and wait for next byte to complete and capture
+                                
                                 if controlNumber < 64 {
                                     controlByteSelector = false
                                     
@@ -528,15 +532,29 @@ public class MidiPacketsFilter {
                                             filterState.bank.values[Int(channel)] = bankNumber
                                         }
                                     }
-                                } else {
+                                }
+                                
+                                // MARK: - Control number >= 64 : Single value control
+                                
+                                else {
                                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                                    if let mib = midiInputBuffer {
+                                        mib.addControl(cc1: controlNumber, cc2: byte)
+                                    }
+
                                     controlNumber = 0
                                 }
                             }
+                            
+                            
                         } else {
-                            // If a control in the 0..63 range has been caught without msb or lsb, we store the value
+                            // If a control in the 0..63 range has been caught without msb or lsb, we capture the value
                             if controlNumber > 0 {
                                 output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                                if let mib = midiInputBuffer {
+                                    mib.addControl(cc1: controlNumber, cc2: byte)
+                                }
+                                // Reset control number
                                 controlNumber = 0
                             }
                         }
@@ -797,14 +815,21 @@ public class MidiPacketsFilter {
                     } // End scan
                 }
                 
-                // If a controlNumber that potentially takes 2 bytes is set and has not be completed, we store the value
+                // If a controlNumber that potentially takes 2 bytes is set and has not be completed, we capture the value
+                
                 if controlNumber > 0 && controlNumber < 64 {
                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
+                    if let mib = midiInputBuffer {
+                        mib.addControl(cc1: controlNumber, cc2: byte)
+                    }
+
                     controlNumber = 0
                 }
                 
-                // Go to next packet ( should never happen for musical events )
-                p = MIDIPacketNext(&p).pointee
+                if !cancelled {
+                    // Go to next packet ( should never happen for musical events )
+                    p = MIDIPacketNext(&p).pointee
+                }
             }
             
             if let mib = midiInputBuffer, let tap = midiInputBufferTap {

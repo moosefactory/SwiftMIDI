@@ -60,6 +60,13 @@ public struct MidiEvent {
     static let channelMask: UInt8 = 0x0F
     static let typeMask: UInt8 = 0xF0
     
+    public var formatedToMilliseconds: String {
+        let d = DateFormatter()
+        //d.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        d.dateFormat = "HH:mm:ss.SSS"
+        return d.string(from: Date(timeIntervalSince1970: Double(timestamp) / 1000000000))
+    }
+    
     public init?(midiPacket: MIDIPacket) {
         guard let t = MidiEventType(rawValue: (midiPacket.data.0 & 0xF0)) else { return nil }
         self.init(type: t,
@@ -103,10 +110,10 @@ extension MidiEvent: CustomStringConvertible {
         switch type {
         
         case .noteOn:
-            let note = String("  \(value1.toNote)".suffix(3))
+            let note = String("  \(value1.asNoteString)".suffix(3))
             return " Note On     \(note)     Value: \(val1)   Velo: \(val2)  CH:\(chanStr) "
         case .noteOff:
-            let note = String("  \(value1.toNote)".suffix(3))
+            let note = String("  \(value1.asNoteString)".suffix(3))
             return " Note Off    \(note)     Value: \(val1)              CH:\(chanStr) "
         case .polyAfterTouch:
             return " PolyAfterTouch  Value: \(val2) Number: \(val1) CH:\(chanStr) "
@@ -133,10 +140,13 @@ extension MidiEvent: CustomStringConvertible {
 
 public extension MidiEvent {
     
-    var noteParams: MidiNote {
-        return MidiNote(note: value1, velocity: value2)
+    var noteParams: NoteObject {
+        return NoteObject(note: value1, velocity: value2)
     }
     
+    var controlParams: ControlObject {
+        return ControlObject(number: value1, value: value2)
+    }
     /// noteOff
     ///
     /// Returns current event with noteOff type.

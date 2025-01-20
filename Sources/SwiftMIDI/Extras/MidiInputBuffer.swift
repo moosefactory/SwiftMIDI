@@ -36,23 +36,36 @@ public class MidiInputBuffer: CustomStringConvertible {
     public var numNoteOffs = 0
     public var noteOnBuffer = [UInt16].init(repeating: 0, count: 256)
     public var numNoteOns = 0
+    public var numControls = 0
     public var count = 0
 
+    public var controlsBuffer = [UInt16].init(repeating: 0, count: 256)
     public var time: UInt64 = 0
     public var offset: Int32 = 0
 
+    public var isEmpty: Bool {
+        numNoteOns == 0 && numNoteOffs == 0 && numControls == 0
+    }
+    
     public func clear(at time: UInt64, stepOffset: Int32) {
         self.time = time
         self.offset = stepOffset
         numNoteOffs = 0
         numNoteOns = 0
+        numControls = 0
+    }
+    
+    public func addControl(cc1: UInt8, cc2: UInt8) {
+        controlsBuffer[numControls] = (UInt16(cc1) << 8) | UInt16(cc2)
+        numControls += 1
+        print("[MIDIBUFFER] addControl(\(cc1),\(cc2))\r\(self.description)")
     }
     
     public func addNoteOn(pitch: UInt8, velocity: UInt8) {
         noteOnBuffer[numNoteOns] = (UInt16(pitch) << 8) | UInt16(velocity)
         numNoteOns += 1
     }
-    
+
     public func addNoteOff(pitch: UInt8, velocity: UInt8) {
         noteOffBuffer[numNoteOffs] = (UInt16(pitch) << 8) | UInt16(velocity)
         numNoteOffs += 1
@@ -65,6 +78,6 @@ public class MidiInputBuffer: CustomStringConvertible {
         var offStr = "0x"
         for i in 0..<numNoteOffs { offStr += String(noteOffBuffer[i], radix: 16, uppercase: true) }
 
-        return "BUFFER : t = \(time) - offset = \(offset)\r    ON \(onStr)\r    OFF : \(offStr)"
+        return "BUFFER : t = \(time) - offset = \(offset)\r    ON \(onStr)\r    OFF : \(offStr)\r    noteOn:\(numNoteOns) noteOff:\(numNoteOffs) controls:\(numControls)"
     }
 }
