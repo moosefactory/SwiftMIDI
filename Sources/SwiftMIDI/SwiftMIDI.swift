@@ -1,4 +1,4 @@
-/*--------------------------------------------------------------------------*/
+ /*--------------------------------------------------------------------------*/
 /*   /\/\/\__/\/\/\        MooseFactory SwiftMidi                   */
 /*   \/\/\/..\/\/\/                                                         */
 /*        |  |             (c)2021 Tristan Leblanc                          */
@@ -103,6 +103,6 @@ public func throwMidiErrorIfNeeded(_ err: OSStatus) throws {
 
 public func coreMidi(_ block: ()->OSStatus) throws {
     let err = block()
-    try throwMidiErrorIfNeeded(err)
+    //try throwMidiErrorIfNeeded(err)
 }
 
