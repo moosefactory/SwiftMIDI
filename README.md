@@ -1,12 +1,15 @@
 # SwiftMIDI
+![Icon](Icon.png)
 
-**SwiftMIDI** adds a swifty syntaxic sugar to make **CoreMidi** a bit less bitter.
+**SwiftMIDI** is a swifty syntaxic sugar that help to integrate **CoreMidi** in swift projects.
+
+**SwiftMIDI** is a simple framework. It that does only wrap principal CoreMIDI functions and add few logic and omdern swift definitions for common midi operations.
 
 The main purpose of this framework is to 
 
 - Replace calls returning OSStatus by throwing function
 - Replace UnsafeMutablePointer output parameters by classic function results
-- Few syntax changes in function names
+- Few syntax changes in function names and return types to follow modern swift standards
 
 ```swift
 func findMidiThruConnections(owner: String) throws -> [MIDIThruConnectionRef]?
@@ -18,11 +21,11 @@ instead of
 func MIDIThruConnectionFind(_ inPersistentOwnerID: CFString, _ outConnectionList: UnsafeMutablePointer<Unmanaged<CFData>>) -> OSStatus
 ```
 
-**SwiftMIDI** is a simple framework that does only wrap principal CoreMIDI functions, and add few logic and definitions for common midi operations.
+## SwiftMidiCenter
 
-[https://github.com/moosefactory/SwiftMIDI]()
+SwiftMidiCenter is a higher level package, based on the **SwiftMidi** framework, that makes midi devices and connections easier.
 
-The **SwiftMIDICenter** framework adding some more system oriented features like storage and configurations management.
+It also propose some more system oriented features like default storage and configurations management.
 
 [https://github.com/moosefactory/SwiftMidiCenter](https://github.com/moosefactory/SwiftMidiCenter)
 
