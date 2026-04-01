@@ -49,8 +49,8 @@ extension Int {
 
 
 public struct SwiftMidiNote: CustomStringConvertible {
-    public private(set) var number: Int
-    public private(set) var numberInOctave: Int
+    public private(set) var number: UInt8
+    public private(set) var numberInOctave: UInt8
     public private(set) var letter: String
     public private(set) var string: String
     public private(set) var stringWithoutOctave: String
@@ -58,13 +58,18 @@ public struct SwiftMidiNote: CustomStringConvertible {
 
     private static var _notes: [SwiftMidiNote]?
     
-    public static var maxNotes = 256 { didSet {
+    public static var maxNotes: UInt8 = 128 { didSet {
         _notes = nil
     }}
     
     public static subscript (index: Int) -> SwiftMidiNote? {
         guard index >= 0 && index < maxNotes else { return nil }
         return all[index]
+    }
+    
+    public static subscript (index: UInt8) -> SwiftMidiNote? {
+        guard index >= 0 && index < maxNotes else { return nil }
+        return all[Int(index)]
     }
     
     /// An array containing all notes as strings ["C0", "C#0", "D0", ...]

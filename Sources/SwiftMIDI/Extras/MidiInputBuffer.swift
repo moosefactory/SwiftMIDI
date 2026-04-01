@@ -31,18 +31,48 @@
 import Foundation
 import CoreMIDI
 
+public extension UInt16 {
+    public var noteAndVelocity: (UInt8, UInt8) {
+        return (UInt8(self>>8), UInt8(self&0xFF))
+    }
+    
+    public var note: UInt8 {
+        return UInt8(self>>8)
+    }
+    
+    public var velocity: UInt8 {
+        return UInt8(self&0xFF)
+   }
+}
+
+public typealias FourUInt8 = (UInt8, UInt8, UInt8, UInt8)
+
 public class MidiInputBuffer: CustomStringConvertible {
-    public var noteOffBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var noteOffBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
     public var numNoteOffs = 0
-    public var noteOnBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var noteOnBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
     public var numNoteOns = 0
     public var numControls = 0
     public var count = 0
 
-    public var controlsBuffer = [UInt16].init(repeating: 0, count: 256)
+    public var controlsBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
     public var time: UInt64 = 0
     public var offset: Int32 = 0
 
+    public func process(noteOn: @escaping (FourUInt8)->Void,
+                 noteOff: @escaping (FourUInt8)->Void,
+                 control: @escaping (FourUInt8)->Void) {
+        for i in 0..<numNoteOns {
+            noteOn(noteOnBuffer[i])
+        }
+        for i in 0..<numNoteOffs {
+            noteOff(noteOffBuffer[i])
+        }
+        for i in 0..<numControls{
+            control(self.controlsBuffer[i])
+        }
+    }
+    
     public var isEmpty: Bool {
         numNoteOns == 0 && numNoteOffs == 0 && numControls == 0
     }
@@ -55,28 +85,31 @@ public class MidiInputBuffer: CustomStringConvertible {
         numControls = 0
     }
     
-    public func addControl(cc1: UInt8, cc2: UInt8) {
-        controlsBuffer[numControls] = (UInt16(cc1) << 8) | UInt16(cc2)
+    public func addControl(cc1: UInt8, cc2: UInt8, channel: UInt8) {
+        controlsBuffer[numControls] = (cc1,cc2,channel,0)
         numControls += 1
-        print("[MIDIBUFFER] addControl(\(cc1),\(cc2))\r\(self.description)")
+        print("[MIDIBUFFER] addControl(\(cc1),\(cc2)) - \(numControls)\r\(self.description)")
     }
     
-    public func addNoteOn(pitch: UInt8, velocity: UInt8) {
-        noteOnBuffer[numNoteOns] = (UInt16(pitch) << 8) | UInt16(velocity)
+    public func addNoteOn(pitch: UInt8, velocity: UInt8, channel: UInt8) {
+        print("[MIDIBUFFER] addNoteOn(\(pitch),\(velocity)) - \(numNoteOns+1)\r\(self.description)")
+
+        noteOnBuffer[numNoteOns] = (pitch,velocity,channel,0)
         numNoteOns += 1
     }
 
-    public func addNoteOff(pitch: UInt8, velocity: UInt8) {
-        noteOffBuffer[numNoteOffs] = (UInt16(pitch) << 8) | UInt16(velocity)
+    public func addNoteOff(pitch: UInt8, velocity: UInt8, channel: UInt8) {
+        print("[MIDIBUFFER] addNoteOff(\(pitch),\(velocity), channel: \(channel) - \(numNoteOffs+1) notesOff in buffer\r\(self.description)")
+        noteOffBuffer[numNoteOffs] = (pitch,velocity,channel,0)
         numNoteOffs += 1
     }
 
     public var description: String {
         var onStr = "0x"
-        for i in 0..<numNoteOns { onStr += String(noteOnBuffer[i], radix: 16, uppercase: true) }
+        for i in 0..<numNoteOns { onStr += String(noteOnBuffer[i].0, radix: 16, uppercase: true) }
 
         var offStr = "0x"
-        for i in 0..<numNoteOffs { offStr += String(noteOffBuffer[i], radix: 16, uppercase: true) }
+        for i in 0..<numNoteOffs { offStr += String(noteOffBuffer[i].0, radix: 16, uppercase: true) }
 
         return "BUFFER : t = \(time) - offset = \(offset)\r    ON \(onStr)\r    OFF : \(offStr)\r    noteOn:\(numNoteOns) noteOff:\(numNoteOffs) controls:\(numControls)"
     }

@@ -539,7 +539,7 @@ public class MidiPacketsFilter {
                                 else {
                                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
                                     if let mib = midiInputBuffer {
-                                        mib.addControl(cc1: controlNumber, cc2: byte)
+                                        mib.addControl(cc1: controlNumber, cc2: byte, channel: channel)
                                     }
 
                                     controlNumber = 0
@@ -552,7 +552,7 @@ public class MidiPacketsFilter {
                             if controlNumber > 0 {
                                 output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
                                 if let mib = midiInputBuffer {
-                                    mib.addControl(cc1: controlNumber, cc2: byte)
+                                    mib.addControl(cc1: controlNumber, cc2: byte, channel: channel)
                                 }
                                 // Reset control number
                                 controlNumber = 0
@@ -633,7 +633,11 @@ public class MidiPacketsFilter {
                                                           value1: data1, value2: byte))
                                         }
                                         if let mib = midiInputBuffer {
-                                            mib.addNoteOn(pitch: data1, velocity: byte)
+                                            if byte == 0 {
+                                                mib.addNoteOff(pitch: data1, velocity: byte, channel: channel)
+                                            } else {
+                                                mib.addNoteOn(pitch: data1, velocity: byte, channel: channel)
+                                            }
                                         }
                                         // -------------
                                         
@@ -695,7 +699,7 @@ public class MidiPacketsFilter {
                                                   value1: data1, value2: byte))
                                 }
                                 if let mib = midiInputBuffer {
-                                    mib.addNoteOff(pitch: data1, velocity: byte)
+                                    mib.addNoteOff(pitch: data1, velocity: byte, channel: channel)
                                 }
                                 
                                 byteSelector = false
@@ -820,7 +824,7 @@ public class MidiPacketsFilter {
                 if controlNumber > 0 && controlNumber < 64 {
                     output.controlValues.controlStates[Int(channel)].values[Int(controlNumber)] = Int16(byte)
                     if let mib = midiInputBuffer {
-                        mib.addControl(cc1: controlNumber, cc2: byte)
+                        mib.addControl(cc1: controlNumber, cc2: byte, channel: channel)
                     }
 
                     controlNumber = 0
