@@ -48,6 +48,7 @@ public extension UInt16 {
 public typealias FourUInt8 = (UInt8, UInt8, UInt8, UInt8)
 
 public class MidiInputBuffer: CustomStringConvertible {
+    
     public var noteOffBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
     public var numNoteOffs = 0
     public var noteOnBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
@@ -58,6 +59,16 @@ public class MidiInputBuffer: CustomStringConvertible {
     public var controlsBuffer = [FourUInt8].init(repeating: (0,0,0,0), count: 256)
     public var time: UInt64 = 0
     public var offset: Int32 = 0
+
+    public var lastControl: FourUInt8? {
+        guard numControls > 0 else { return nil }
+        return controlsBuffer[numControls-1]
+    }
+    
+    public var lastNoteOn: FourUInt8? {
+        guard numNoteOns > 0 else { return nil }
+        return noteOnBuffer[numNoteOns-1]
+    }
 
     public func process(noteOn: @escaping (FourUInt8)->Void,
                  noteOff: @escaping (FourUInt8)->Void,
@@ -85,22 +96,39 @@ public class MidiInputBuffer: CustomStringConvertible {
         numControls = 0
     }
     
+    var events = [MidiEvent]()
+    var numEvents: Int = 0
+    
+    public func addEvent(_ event: MidiEvent) {
+        events.append(event)
+        numEvents += 1
+        switch event.type {
+        case .noteOn:
+            noteOnBuffer[numNoteOns] = (event.value1,event.value2,event.channel,event.type.rawValue)
+            numNoteOns += 1
+        case .noteOff:
+            noteOnBuffer[numNoteOffs] = (event.value1,event.value2,event.channel,event.type.rawValue)
+            numNoteOffs += 1
+        case .control:
+            controlsBuffer[numControls] = (event.value1,event.value2,event.channel,event.type.rawValue)
+            numControls += 1
+        default:
+            break
+        }
+    }
+    
     public func addControl(cc1: UInt8, cc2: UInt8, channel: UInt8) {
-        controlsBuffer[numControls] = (cc1,cc2,channel,0)
+        controlsBuffer[numControls] = (cc1,cc2,channel, MidiEventType.control.rawValue)
         numControls += 1
-        print("[MIDIBUFFER] addControl(\(cc1),\(cc2)) - \(numControls)\r\(self.description)")
     }
     
     public func addNoteOn(pitch: UInt8, velocity: UInt8, channel: UInt8) {
-        print("[MIDIBUFFER] addNoteOn(\(pitch),\(velocity)) - \(numNoteOns+1)\r\(self.description)")
-
-        noteOnBuffer[numNoteOns] = (pitch,velocity,channel,0)
+        noteOnBuffer[numNoteOns] = (pitch,velocity,channel, MidiEventType.noteOn.rawValue)
         numNoteOns += 1
     }
 
     public func addNoteOff(pitch: UInt8, velocity: UInt8, channel: UInt8) {
-        print("[MIDIBUFFER] addNoteOff(\(pitch),\(velocity), channel: \(channel) - \(numNoteOffs+1) notesOff in buffer\r\(self.description)")
-        noteOffBuffer[numNoteOffs] = (pitch,velocity,channel,0)
+        noteOffBuffer[numNoteOffs] = (pitch,0,channel, MidiEventType.noteOff.rawValue)
         numNoteOffs += 1
     }
 

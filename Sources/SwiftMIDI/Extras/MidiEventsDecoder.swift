@@ -50,9 +50,8 @@ public class MidiEventsDecoder {
         var p = packetList.pointee.packet
         
         for _ in 0 ..< numPackets {
-            if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0,
-               let event = MidiEvent(midiPacket: p) {
-                out.append(event)
+            if (channelMask & (0x0001 << (p.data.0 & 0x0F))) > 0  {
+                out.append(MidiEvent(with: p))
             }
             p = MIDIPacketNext(&p).pointee
         }

@@ -36,16 +36,77 @@ import CoreMIDI
 /// A musical midi event object used to manipulate common midi events
 
 public struct MidiEvent {
-    public let type: MidiEventType
-    public let timestamp: UInt64
-    public let channel: UInt8
-    public let status: UInt8
-    public let value1: UInt8
-    public let value2: UInt8
     
-    public let subType: MidiEventSubType
+    public var packet: MIDIPacket
     
-    public var numberOfDataBytes: UInt8
+    
+    public var type: MidiEventType {
+        guard let t = MidiEventType(rawValue: (packet.data.0 & 0xF0)) else {
+            fatalError("MidiEvent - Unrecognized Midi Event Type")
+        }
+        return t
+    }
+    
+    public var channel: UInt8 { packet.data.0 & 0x0F }
+    
+    public var status: UInt8 { packet.data.0 & 0x0F }
+
+    public var timestamp: UInt64 { packet.timeStamp }
+    
+    public var value1: UInt8 { packet.data.1 }
+    public var value2: UInt8 { packet.data.2 }
+    
+    
+    public var controlNumber: UInt8 { packet.data.1 }
+    public var controlValue: UInt8 { packet.data.2 }
+
+    public var noteNumber: UInt8 { packet.data.1 }
+    public var velocity: UInt8 { packet.data.2 }
+
+    public var subType: MidiEventSubType {
+        if (status >= SystemCommonMessage.midiTimeCode.rawValue) && (status <= SystemCommonMessage.endOfExclusive.rawValue) {
+            return .systemCommon
+        }
+
+        switch type {
+        case .noteOff:
+            return .musical
+        case .noteOn:
+            return .musical
+        case .polyAfterTouch:
+            return .musical
+        case .control:
+            if value1 >= ChannelModeMessage.allSoundOff.rawValue && value1 <= ChannelModeMessage.poly.rawValue {
+                return .channelMode
+            }
+            return .musical
+        case .programChange:
+            return .musical
+        case .afterTouch:
+            return .musical
+        case .pitchBend:
+            return .musical
+        case .realTimeMessage:
+            return .systemCommon
+        }
+        if type == .control {
+            if value1 >= ChannelModeMessage.allSoundOff.rawValue && value1 <= ChannelModeMessage.poly.rawValue {
+                return .channelMode
+            }
+        }
+    }
+
+//
+//    public let type: MidiEventType
+//    public let timestamp: UInt64
+//    public let channel: UInt8
+//    public let status: UInt8
+//    public let value1: UInt8
+//    public let value2: UInt8
+//    
+//    public let subType: MidiEventSubType
+    
+    public var numberOfDataBytes: UInt16 { packet.length }
     public var midiPacketSource: MIDIPacket?
     
     /// channelMode
@@ -67,37 +128,27 @@ public struct MidiEvent {
         return d.string(from: Date(timeIntervalSince1970: Double(timestamp) / 1000000000))
     }
     
-    public init?(midiPacket: MIDIPacket) {
-        guard let t = MidiEventType(rawValue: (midiPacket.data.0 & 0xF0)) else { return nil }
-        self.init(type: t,
-                  timestamp: midiPacket.timeStamp,
-                  channel: midiPacket.data.0 & 0x0F,
-                  value1: midiPacket.data.1,
-                  value2: midiPacket.data.2)
-        midiPacketSource = midiPacket
+//    public init?(midiPacket: MIDIPacket) {
+//        guard let t = MidiEventType(rawValue: (midiPacket.data.0 & 0xF0)) else { return nil }
+//        self.init(type: t,
+//                  timestamp: midiPacket.timeStamp,
+//                  channel: midiPacket.data.0 & 0x0F,
+//                  value1: midiPacket.data.1,
+//                  value2: midiPacket.data.2)
+//        midiPacketSource = midiPacket
+//    }
+//    
+    public init(type: MidiEventType, timestamp: UInt64 = 0, channel: UInt8, value1: UInt8, value2: UInt8 = 0) {
+        packet = MIDIPacket()
+        packet.data.0 = type.rawValue & 0xF0 | channel & 0x0F
+        packet.data.1 = value1
+        packet.data.2 = value2
+        packet.timeStamp = timestamp
+        packet.length = UInt16(type.dataLength)
     }
     
-    public init(type: MidiEventType, timestamp: UInt64 = 0, channel: UInt8, value1: UInt8, value2: UInt8 = 0) {
-        self.type = type
-        self.timestamp = timestamp
-        self.channel = channel
-        self.value1 = value1
-        self.value2 = value2
-        self.numberOfDataBytes = type.dataLength
-        let status = (type.rawValue & 0xF0) | (channel & 0x0F)
-        self.status = status
-        
-        if (status >= SystemCommonMessage.midiTimeCode.rawValue) && (status <= SystemCommonMessage.endOfExclusive.rawValue) {
-            subType = .systemCommon
-            return
-        }
-        if type == .control {
-            if value1 >= ChannelModeMessage.allSoundOff.rawValue && value1 <= ChannelModeMessage.poly.rawValue {
-                subType = .channelMode
-                return
-            }
-        }
-        subType = .musical
+    public init(with packet: MIDIPacket) {
+        self.packet = packet
     }
 }
 
@@ -153,7 +204,7 @@ public extension MidiEvent {
     /// This has sense only for noteOn events.
     
     func noteOff() -> MidiEvent {
-        return MidiEvent(type: .noteOff, timestamp: timestamp, channel: channel, value1: value1, value2: 0)
+        MidiEvent.noteOff(channel: channel, note: noteNumber)
     }
     
     /// bytes
@@ -207,7 +258,6 @@ public extension MidiEvent {
         default:
             break
         }
-
         return packet
     }
 }

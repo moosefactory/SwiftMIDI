@@ -33,7 +33,7 @@ import CoreMIDI
 
 public class MidiFilterSettings: Codable, Equatable, CustomStringConvertible {
     
-    public var enabled: Bool = true
+    public var enabled: Bool = false
     
     // MARK: - Filtering parameters
     
