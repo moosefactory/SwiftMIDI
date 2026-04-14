@@ -36,9 +36,8 @@ import CoreMIDI
 /// A musical midi event object used to manipulate common midi events
 
 public struct MidiEvent {
-    
+        
     public var packet: MIDIPacket
-    
     
     public var type: MidiEventType {
         guard let t = MidiEventType(rawValue: (packet.data.0 & 0xF0)) else {
@@ -96,18 +95,7 @@ public struct MidiEvent {
         }
     }
 
-//
-//    public let type: MidiEventType
-//    public let timestamp: UInt64
-//    public let channel: UInt8
-//    public let status: UInt8
-//    public let value1: UInt8
-//    public let value2: UInt8
-//    
-//    public let subType: MidiEventSubType
-    
     public var numberOfDataBytes: UInt16 { packet.length }
-    public var midiPacketSource: MIDIPacket?
     
     /// channelMode
     ///
