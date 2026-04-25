@@ -64,6 +64,26 @@ public enum MidiEventType: UInt8, CustomStringConvertible {
         }
     }
     
+    public var name: String { description }
+    
+    public var emojiDot: String {
+        switch self {
+        case .noteOn:
+            return "🟢"
+        case .noteOff:
+            return "🔴"
+        case .afterTouch, .polyAfterTouch:
+            return "🟠"
+        case .control:
+            return "🔵"
+        case .pitchBend:
+            return "🟣"
+        case .programChange:
+            return "🟡"
+        default:
+            return "🟤"
+        }
+    }
     /// description
     ///
     /// Returns the readable english description
