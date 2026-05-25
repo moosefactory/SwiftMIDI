@@ -71,21 +71,25 @@ public extension MIDIPacket {
 }
 
 
-public class ShortMidiPacketBuffer: Codable {
-    public var pageSize: Int = 1024
+public class ShortMidiPacketBuffer: Codable, CustomStringConvertible{
+    public var pageSize: Int = 768
     public var packets: [ShortMidiPacket]
     public var count: Int { packets.count }
     public var isEmpty: Bool { packets.isEmpty }
+    
+    // MAK: - Initialization
     
     public init(packets: [ShortMidiPacket]) {
         self.packets = packets
     }
     
     public init() {
-        packets = [ShortMidiPacket].init(repeating: ShortMidiPacket(), count: 1024)
+        packets = [ShortMidiPacket].init(repeating: ShortMidiPacket(), count: pageSize)
         clear()
     }
-
+    
+    // MAK: - Packets array management
+    
     public func clear() {
         packets.removeAll(keepingCapacity: true)
     }
@@ -100,6 +104,7 @@ public class ShortMidiPacketBuffer: Codable {
         if packets.count < pageSize {
             packets.append(shortPacket)
         }
+        print("ShortMidiPacketBuffer.add :\r>>\(shortPacket)\r>>Size\(MemoryLayout.size(ofValue: packets))")
     }
     
     public func add(shortPackets: [ShortMidiPacket]) {
@@ -108,10 +113,50 @@ public class ShortMidiPacketBuffer: Codable {
         }
     }
     
+    public func remove(shortPackets: [ShortMidiPacket]) {
+        let newPackets = packets.filter { packet in
+            !shortPackets.contains(packet)
+        }
+        packets = newPackets
+    }
+    
     public func add(shortPacketBuffer: ShortMidiPacketBuffer) {
         if packets.count < (pageSize - shortPacketBuffer.count) {
             packets.append(contentsOf: shortPacketBuffer.packets)
         }
+    }
+    
+    public func update(eventsToUpdate: [ShortMidiPacket]) {
+        eventsToUpdate.forEach { event in
+            if let index = indexOfPacket(with: event.id) {
+                packets[index] = event
+            }
+        }
+    }
+    
+    // MARK: - Access Packets
+    
+    public func packet(at index: Int) -> ShortMidiPacket? {
+        if index >= 0 && index < packets.count {
+            return packets[index]
+        }
+        return nil
+    }
+    
+    public func packet(with id: UInt32) -> ShortMidiPacket? {
+        packets.first { packet in
+            packet.id == id
+        }
+    }
+    
+    public func indexOfPacket(with id: UInt32) -> Int? {
+        packets.firstIndex(where: { packet in
+            packet.id == id
+        })
+    }
+    
+    public func index(of packet: ShortMidiPacket) -> Int? {
+        packets.firstIndex { $0 == packet }
     }
     
     public func forEach(_ block: (ShortMidiPacket)->Void) {
@@ -125,7 +170,7 @@ public class ShortMidiPacketBuffer: Codable {
             block(index, packet)
         }
     }
-
+    
     public func firstPacket(after time: MIDITimeStamp) -> ShortMidiPacket? {
         return packets.first { packet in
             packet.timeStamp > time
@@ -137,33 +182,79 @@ public class ShortMidiPacketBuffer: Codable {
             packet.timeStamp > time
         }
     }
+    
+    public var description: String {
+        "ShortMidiPacketBuffer - \(count)/\(pageSize) \(packets.enumerated().map({"\r \($0.offset)\($0.element)"}).joined())"
+    }
 }
 
 // MARK: - Short Midi Packet
 
-/// A reduced version of the midi packet
-/// -> timeStamp  - 64bits
-/// -> timeStamp  - 16bits
-/// -> data       - 48bits
-/// -> noteLength - 64bits
-public struct ShortMidiPacket: Codable {
-    
-    public var timeStamp: MIDITimeStamp = 0
-    public var length: UInt16 = 0
-    public var data: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) = (0,0,0,0,0,0)
-    
-    public var noteLength: UInt64 = 0
+public protocol ShortMidiPacketInfo {
+    func copy() -> ShortMidiPacketInfo
+}
 
+public typealias ShortMidiPacketInfoID = UInt16
+
+/// A reduced version of the midi packet
+/// -> timeStamp  - 8 bytes
+/// -> length     - 2 bytes -> 10
+/// -> data       - 4 bytes  ( status,channel | note/cc | velocity/value | data.3  )
+/// -> id         - 4 bytes
+/// -> noteLength - 8 bytes
+/// -> infoId     - 4 bytes
+///--------------------------
+/// ->
+public struct ShortMidiPacket: Codable, Identifiable, Equatable, CustomStringConvertible, Sendable {
+    
+    public var description: String {
+        "♩ \(timeStamp) - Status:\(status) - Note:\(noteNumber) - Velo:\(velocity) - Length:\(noteLength)"
+    }
+    
+    static var next_id: UInt32 = 0
+    
+    static func nextId() -> UInt32 {
+        next_id += 1
+        return next_id
+    }
+    
+    public static func == (lhs: ShortMidiPacket, rhs: ShortMidiPacket) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    public init(timeStamp: MIDITimeStamp = 0,
+                data: (UInt8, UInt8, UInt8, UInt8) = (0,0,0,0),
+                noteLength: UInt64 = 0,
+                info: ShortMidiPacketInfoID = 0) {
+        self.timeStamp = timeStamp
+        self.data = data
+        self.id = ShortMidiPacket.nextId()
+        self.extra = noteLength & 0x00FFFFFF | UInt64(info << 48)
+    }
+    
+    public var timeStamp: MIDITimeStamp = 0                     // 64 - 8
+    public var data: (UInt8, UInt8, UInt8, UInt8) = (0,0,0,0)   // 32 - 4
+    public private(set) var id: UInt32 = 0                                   // 32 - 4
+    private var extra: UInt64 = 0                               // 64 - 8
+    
+    public var noteLength: UInt64 {
+        get { extra & 0x00FFFFFF }
+        set { extra = newValue & 0x00FFFFFF | UInt64(info << 48) }
+    }
+    
+    public var info: UInt16 {
+        get { UInt16(extra >> 48) }
+        set { extra = noteLength & 0x00FFFFFF | UInt64(newValue << 48) }
+    }
+    
+    /// JSON Keys
     enum CodingKeys: String, CodingKey {
         case timeStamp
-        case noteLength
-        case length
         case data0
         case data1
         case data2
         case data3
-        case data4
-        case data5
+        case extra
     }
     
     public init() {}
@@ -171,41 +262,34 @@ public struct ShortMidiPacket: Codable {
     /// Init step from JSON container
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         timeStamp = try values.decode(MIDITimeStamp.self, forKey: .timeStamp)
-        noteLength = try values.decode(UInt64.self, forKey: .noteLength)
-        length = try values.decode(UInt16.self, forKey: .length)
+        extra = try values.decode(UInt64.self, forKey: .extra)
         data.0 = try values.decode(UInt8.self, forKey: .data0)
         data.1 = try values.decode(UInt8.self, forKey: .data1)
         data.2 = try values.decode(UInt8.self, forKey: .data2)
         data.3 = try values.decode(UInt8.self, forKey: .data3)
-        data.4 = try values.decode(UInt8.self, forKey: .data4)
-        data.5 = try values.decode(UInt8.self, forKey: .data5)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
         try container.encode(timeStamp, forKey: .timeStamp)
-        try container.encode(noteLength, forKey: .noteLength)
-        try container.encode(length, forKey: .length)
+        try container.encode(extra, forKey: .extra)
         try container.encode(data.0, forKey: .data0)
         try container.encode(data.1, forKey: .data1)
         try container.encode(data.2, forKey: .data2)
         try container.encode(data.3, forKey: .data3)
-        try container.encode(data.4, forKey: .data4)
-        try container.encode(data.5, forKey: .data5)
     }
-
+    
+    /// Init from midi packet
     public init(packet: MIDIPacket) {
         self.timeStamp = packet.timeStamp
-        self.length = packet.length
+        self.extra = 0
         self.data.0 = packet.data.0
         self.data.1 = packet.data.1
         self.data.2 = packet.data.2
         self.data.3 = packet.data.3
-        self.data.4 = packet.data.4
-        self.data.5 = packet.data.5
     }
     
     public init(type: MidiEventType,
@@ -213,13 +297,17 @@ public struct ShortMidiPacket: Codable {
                 channel: UInt8 = 0,
                 value1: UInt8 = 0,
                 value2: UInt8 = 0,
-                noteLength: UInt64 = 0) {
-        data.0 = type.rawValue & 0xF0 | channel & 0x0F
-        data.1 = value1
-        data.2 = value2
-        timeStamp = timestamp
-        length = UInt16(type.dataLength)
-        self.noteLength = noteLength
+                noteLength: UInt64 = 0,
+                info: ShortMidiPacketInfoID) {
+        self.init(timeStamp: timestamp,
+                  data: (type.rawValue & 0xF0 | channel & 0x0F, value1, value2, 0),
+                  noteLength: noteLength,
+                  info: info)
+    }
+    
+    public func copy() -> ShortMidiPacket {
+        var copy = self
+        return copy
     }
     
     public var type: MidiEventType {
@@ -255,7 +343,7 @@ public struct ShortMidiPacket: Codable {
         let data0 = data.0
         var packet = MIDIPacket()
         packet.timeStamp = timeStamp
-        packet.length = length
+        packet.length = 3
         if let channel = channel {
             packet.data.0 = (data.0 & MidiEvent.typeMask) | channel
         } else {
@@ -264,19 +352,32 @@ public struct ShortMidiPacket: Codable {
         packet.data.1 = data.1
         packet.data.2 = data.2
         packet.data.3 = data.3
-        packet.data.4 = data.4
-        packet.data.5 = data.5
         return packet
     }
 }
 
 extension ShortMidiPacket {
-    static func noteOn(note: UInt8, velocity: UInt8, channel: UInt8) -> ShortMidiPacket {
-        ShortMidiPacket(type: .noteOn, channel: channel, value1: note, value2: velocity)
+    public static func noteOn(timeStamp: UInt64 = 0,
+                              note: UInt8 = 36,
+                              velocity: UInt8 = 80,
+                              channel: UInt8 = 0,
+                              noteLength: UInt64 = 0,
+                              info: ShortMidiPacketInfoID = 0) -> ShortMidiPacket {
+        ShortMidiPacket(type: .noteOn,
+                        timestamp: timeStamp,
+                        channel: channel,
+                        value1: note,
+                        value2: velocity,
+                        noteLength: noteLength,
+                        info: info)
     }
     
-    static func noteOff(note: UInt8, velocity: UInt8 = 0, channel: UInt8) -> ShortMidiPacket {
-        ShortMidiPacket(type: .noteOn, channel: channel, value1: note)
+    public static func noteOff(timeStamp: UInt64 = 0,
+                               note: UInt8 = 36,
+                               velocity: UInt8 = 80,
+                               channel: UInt8 = 0,
+                               info: ShortMidiPacketInfoID = 0) -> ShortMidiPacket {
+        ShortMidiPacket(type: .noteOn, timestamp: timeStamp, channel: channel, value1: note, info: info)
     }
 }
 
@@ -300,13 +401,10 @@ public struct MidiEvent {
         get {
             var midiPacket = MIDIPacket()
             midiPacket.timeStamp = packet.timeStamp
-            midiPacket.length = packet.length
+            midiPacket.length = 3
             midiPacket.data.0 = packet.data.0
             midiPacket.data.1 = packet.data.1
             midiPacket.data.2 = packet.data.2
-            midiPacket.data.3 = packet.data.3
-            midiPacket.data.4 = packet.data.4
-            midiPacket.data.5 = packet.data.5
             return midiPacket
         }
     }
@@ -366,7 +464,7 @@ public struct MidiEvent {
         }
     }
     
-    public var numberOfDataBytes: UInt16 { packet.length }
+    public var numberOfDataBytes: UInt16 { 3 }
     
     /// channelMode
     ///
@@ -392,17 +490,28 @@ public struct MidiEvent {
     //                  value2: midiPacket.data.2)
     //        midiPacketSource = midiPacket
     //    }
-    //    
-    public init(type: MidiEventType, timestamp: UInt64 = 0, channel: UInt8, value1: UInt8, value2: UInt8 = 0) {
-        packet = ShortMidiPacket(type: type, timestamp: timestamp, channel: channel, value1: value1, value2: value2)
+    //
+    public init(type: MidiEventType,
+                timestamp: UInt64 = 0,
+                channel: UInt8,
+                value1: UInt8,
+                value2: UInt8 = 0,
+                info: ShortMidiPacketInfoID = 0) {
+        packet = ShortMidiPacket(type: type,
+                                 timestamp: timestamp,
+                                 channel: channel,
+                                 value1: value1,
+                                 value2: value2,
+                                 info: info)
     }
     
-    public init(with packet: MIDIPacket) {
+    public init(with packet: MIDIPacket, info: ShortMidiPacketInfoID = 0) {
         self.packet = ShortMidiPacket(type: packet.type,
                                       timestamp: packet.timeStamp,
                                       channel: packet.channel,
                                       value1: packet.value1,
-                                      value2: packet.value2)
+                                      value2: packet.value2,
+                                      info: info)
     }
     
     public init(with packet: ShortMidiPacket) {
@@ -548,5 +657,4 @@ public extension Array where Element == MidiEvent {
     func asPacketList(channelOverride: UInt8? = nil) -> MIDIPacketList? {
         return MidiEventsEncoder.encodePacketList(with: self, channelOverride: channelOverride)
     }
-    
 }

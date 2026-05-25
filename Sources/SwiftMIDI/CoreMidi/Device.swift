@@ -279,7 +279,6 @@ public extension SwiftMIDI {
         }
     }
     
-
     /// Returns an array containing all external midi devices in system
     
     static func allExternalDevices() throws -> [MIDIDeviceRef] {

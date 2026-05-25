@@ -58,9 +58,7 @@ public struct SwiftMidiNote: CustomStringConvertible {
 
     private static var _notes: [SwiftMidiNote]?
     
-    public static var maxNotes: UInt8 = 128 { didSet {
-        _notes = nil
-    }}
+    public static let maxNotes: UInt8 = 128
     
     public static subscript (index: Int) -> SwiftMidiNote? {
         guard index >= 0 && index < maxNotes else { return nil }
